@@ -67,6 +67,12 @@ python main.py
 ### 6. Output
 
 - The generated bike image will be saved as `output/custom_bike.png` inside the `bike/output/` directory.
+- For the set of 15 questions, the total tokens is 44,038 approx.
+    Token usage split:
+    image generation input + output = 3,568
+    Questionnaires:3,659 + 3,868 + 3,234 + 3,108 + 3,406 + 3,307 + 2,662 + 2,859 + 2,536 + 2,409 + 2,297 + 2,139 + 1,886 = 33,970
+    Buffer = 7500
+    Total = 3,568 + 33,970 + 7500 = 44,038 
 
 ## Notes
 

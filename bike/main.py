@@ -62,7 +62,12 @@ def main():
         raise ValueError("No image data returned from API.")
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
-    image_path = os.path.join(output_dir, "custom_bike.png")
+    base_name = "custom_bike.png"
+    image_path = os.path.join(output_dir, base_name)
+    suffix = 1
+    while os.path.exists(image_path):
+        image_path = os.path.join(output_dir, f"custom_bike ({suffix}).png")
+        suffix += 1
     with open(image_path, "wb") as f:
         f.write(base64.b64decode(image_data[0]))
     print(f"Image saved to {image_path}")
