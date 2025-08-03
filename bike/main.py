@@ -1,12 +1,13 @@
 import openai
 from prompt import SYSTEM_PROMPT
-import requests
+from dotenv import load_dotenv
 import os
 import base64
 
+load_dotenv()
 
 def main():
-    client = openai.OpenAI(api_key="OPEN_AI_KEY")  # Replace with your actual key
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
