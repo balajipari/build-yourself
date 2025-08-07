@@ -6,6 +6,10 @@ import base64
 
 load_dotenv()
 
+# Model configuration from environment variables
+CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL")
+IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL")
+
 def main():
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -18,7 +22,7 @@ def main():
 
     while True:
         response = client.chat.completions.create(
-            model="o4-mini",
+            model=CHAT_MODEL,
             messages=messages
         )
         llm_message = response.choices[0].message.content.strip()
@@ -36,7 +40,7 @@ def main():
                 )
             })
             summary_response = client.chat.completions.create(
-                model="o4-mini",
+                model=CHAT_MODEL,
                 messages=messages
             )
             final_prompt = summary_response.choices[0].message.content.strip()[:1000]
@@ -49,7 +53,7 @@ def main():
 
     print("\nGenerating your custom bike image...")
     image_response = client.responses.create(
-        model="gpt-4.1-mini",
+        model=IMAGE_MODEL,
         input=final_prompt,
         tools=[{"type": "image_generation"}],
     )

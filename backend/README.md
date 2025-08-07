@@ -51,10 +51,28 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Set Up OpenAI API Key
+### 4. Set Up Environment Variables
 
-- The code currently has a placeholder API key in `main.py`. **Replace it with your own OpenAI API key** for security and privacy.
-- You can set your API key as an environment variable and update the code to read from it, or directly replace the string in the code.
+1. Copy the example environment file:
+   ```bash
+   cp example.env .env
+   ```
+
+2. Edit the `.env` file and set your configuration:
+   ```bash
+   # Required: Your OpenAI API key
+   OPENAI_API_KEY=your_openai_api_key_here
+   
+       # Optional: Model configuration (defaults shown)
+    OPENAI_CHAT_MODEL=gpt-4.1-mini
+    OPENAI_IMAGE_MODEL=gpt-4.1-mini
+    OPENAI_VALIDATION_MODEL=gpt-4.1-mini
+   
+   # Optional: Feature flags
+   ENABLE_LLM_VALIDATION=true
+   ```
+
+**Important**: Replace `your_openai_api_key_here` with your actual OpenAI API key for security and privacy.
 
 ### 5. Run the Application
 
@@ -74,12 +92,25 @@ python main.py
     Buffer = 7500
     Total = 3,568 + 33,970 + 7500 = 44,038 
 
+## Environment Variables
+
+The application uses the following environment variables (defined in `.env`):
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `OPENAI_API_KEY` | Your OpenAI API key | - | Yes |
+| `OPENAI_CHAT_MODEL` | Model for chat completions | `o4-mini` | No |
+| `OPENAI_IMAGE_MODEL` | Model for image generation | `gpt-4.1-mini` | No |
+| `OPENAI_VALIDATION_MODEL` | Model for input validation | `gpt-3.5-turbo` | No |
+| `ENABLE_LLM_VALIDATION` | Enable LLM-based input validation | `true` | No |
+
 ## Notes
 
 - Requires Python 3.7 or higher.
 - Internet connection is required for OpenAI API access.
 - The application uses the OpenAI API for both chat and image generation.
 - All user choices and customizations are handled interactively in the terminal.
+- Environment variables are loaded from `.env` file using python-dotenv.
 
 ## Customization & Extensibility
 

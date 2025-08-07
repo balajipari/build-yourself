@@ -1,5 +1,13 @@
 import openai
+import os
 from typing import List, Dict
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Model configuration from environment variables
+CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL")
+IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL")
 
 # Function to extract summary prompt for image generation
 
@@ -19,7 +27,7 @@ def get_summary_prompt(messages: List[Dict], client) -> str:
         )
     })
     response = client.chat.completions.create(
-        model="o4-mini",
+        model=CHAT_MODEL,
         messages=summary_messages
     )
     final_prompt = response.choices[0].message.content.strip()[:1000]
@@ -32,7 +40,7 @@ def generate_bike_image(prompt: str, client) -> str:
     Given a summary prompt and OpenAI client, generate the image and return the base64 string.
     """
     image_response = client.responses.create(
-        model="gpt-4.1-mini",
+        model=IMAGE_MODEL,
         input=prompt,
         tools=[{"type": "image_generation"}],
     )

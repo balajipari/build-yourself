@@ -3,24 +3,31 @@ import type { Message } from '../context/ChatContext';
 
 interface ChatBoxProps {
   messages: Message[];
-  question: string;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({ messages, question }) => {
+const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   return (
-    <div className="h-64 overflow-y-auto border rounded p-2 bg-gray-50 mb-4">
-      {messages.map((msg, idx) => (
-        <div key={idx} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-          <span className={msg.role === 'user' ? 'font-semibold text-blue-700' : 'font-semibold text-gray-700'}>
-            {msg.role === 'user' ? 'You' : 'AI'}:
-          </span>{' '}
-          <span>{msg.content}</span>
+    <div className="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
+      {messages.length === 0 ? (
+        <div className="text-center text-gray-500 mt-8">
+          <div className="text-4xl mb-2">🏍️</div>
+          <p>Starting your dream bike journey...</p>
         </div>
-      ))}
-      {question && (
-        <div className="text-left mt-2">
-          <span className="font-semibold text-gray-700">AI:</span> <span>{question}</span>
-        </div>
+      ) : (
+        messages.map((msg, idx) => (
+          <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+            <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              msg.role === 'user' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-white text-gray-800 border border-gray-200'
+            }`}>
+              <div className="text-xs font-semibold mb-1 opacity-75">
+                {msg.role === 'user' ? 'You' : 'AI Assistant'}
+              </div>
+              <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+            </div>
+          </div>
+        ))
       )}
     </div>
   );
