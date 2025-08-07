@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-export interface Message {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
+import type { Message } from '../types/chat';
 
 interface ChatContextType {
   messages: Message[];

@@ -18,26 +18,44 @@ class QuestionType(str, Enum):
     FENDER = "fender"
     COLOR = "color"
     FRAME_GEOMETRY = "frame_geometry"
-    # Custom follow-up types
     CUSTOM_FOLLOWUP = "custom_followup"
 
 class QuestionOption(BaseModel):
     number: int
     text: str
     value: str
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary format for API response"""
+        return {
+            "number": self.number,
+            "text": self.text,
+            "value": self.value
+        }
 
 class QuestionResponse(BaseModel):
-    question_type: Union[QuestionType, str]  # Allow custom question types
+    question_type: Union[QuestionType, str]
     question_text: str
     options: List[QuestionOption]
     current_step: int
-    total_steps: int = 15  # Will be dynamic based on custom inputs
+    total_steps: int = 15
     is_complete: bool = False
     user_feedback: Optional[str] = None
-    # Follow-up tracking
-    parent_question: Optional[str] = None  # Which question this follow-up belongs to
-    follow_up_count: int = 0  # How many follow-ups for this parent question
-    max_follow_ups: int = 3  # Maximum follow-ups allowed per custom selection
+    parent_question: Optional[str] = None
+    follow_up_count: int = 0
+    max_follow_ups: int = 3
+    
+    def get_options_dict(self) -> List[Dict[str, Any]]:
+        """Get options as dictionary list for API response"""
+        return [opt.to_dict() for opt in self.options]
+    
+    def is_custom_followup(self) -> bool:
+        """Check if this is a custom follow-up question"""
+        return self.question_type == "custom_followup"
+    
+    def has_parent_question(self) -> bool:
+        """Check if this question has a parent question"""
+        return self.parent_question is not None
 
 class CustomField(BaseModel):
     field_name: str
@@ -79,9 +97,8 @@ class BikeSpecification(BaseModel):
     def add_custom_field(self, field_name: str, value: str) -> bool:
         """Add a custom field with validation"""
         if len(value) > 500:
-            return False  # Validation failed
+            return False
         
-        # Add the custom field without relevance check
         self.custom_fields[field_name] = value
         return True
     
@@ -99,9 +116,116 @@ class BikeSpecification(BaseModel):
             specs[f"custom_{field_name}"] = value
         
         return specs
+    
+    def validate_and_clean_custom_fields(self, validation_func) -> None:
+        """Validate and clean custom fields using provided validation function"""
+        validated_custom_fields = {}
+        for field_name, value in self.custom_fields.items():
+            if validation_func(value):
+                validated_custom_fields[field_name] = value
+            else:
+                print(f"Rejected custom field '{field_name}': '{value}' - validation failed")
+        self.custom_fields = validated_custom_fields
+    
+    def has_custom_fields(self) -> bool:
+        """Check if bike specification has any custom fields"""
+        return len(self.custom_fields) > 0
+    
+    def get_total_fields_count(self) -> int:
+        """Get total number of fields (predefined + custom)"""
+        predefined_count = sum(1 for value in self.dict().values() 
+                              if value is not None and value != self.custom_fields)
+        return predefined_count + len(self.custom_fields)
 
 class StructuredLLMResponse(BaseModel):
     """Structured response from LLM for bike configuration"""
     type: Literal["question", "completion", "error"]
     content: Union[QuestionResponse, BikeSpecification, str]
-    message: str  # Human-readable message for display 
+    message: str
+    
+    def is_question_response(self) -> bool:
+        """Check if response is a question type"""
+        return self.type == "question"
+    
+    def is_completion_response(self) -> bool:
+        """Check if response is a completion type"""
+        return self.type == "completion"
+    
+    def is_error_response(self) -> bool:
+        """Check if response is an error type"""
+        return self.type == "error"
+    
+    def get_question_content(self) -> Optional[QuestionResponse]:
+        """Get question content if response is question type"""
+        if self.is_question_response() and isinstance(self.content, QuestionResponse):
+            return self.content
+        return None
+    
+    def get_bike_specification(self) -> Optional[BikeSpecification]:
+        """Get bike specification if response is completion type"""
+        if self.is_completion_response() and isinstance(self.content, BikeSpecification):
+            return self.content
+        return None
+
+# API Request/Response Models
+class Message(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+class ChatSessionRequest(BaseModel):
+    session_id: str
+    user_message: str
+
+class ChatResponse(BaseModel):
+    ai_message: str
+    is_complete: bool
+    question_text: Optional[str] = None
+    options: Optional[List[dict]] = None
+    current_step: Optional[int] = None
+    total_steps: Optional[int] = None
+    raw_response: dict = None
+    
+    @classmethod
+    def from_question_response(cls, structured_response: StructuredLLMResponse, question_content: QuestionResponse):
+        """Create ChatResponse from question type response"""
+        return cls(
+            ai_message=structured_response.message,
+            is_complete=False,
+            question_text=question_content.question_text,
+            options=question_content.get_options_dict(),
+            current_step=question_content.current_step,
+            total_steps=question_content.total_steps
+        )
+    
+    @classmethod
+    def from_completion_response(cls, structured_response: StructuredLLMResponse):
+        """Create ChatResponse from completion type response"""
+        return cls(
+            ai_message=structured_response.message,
+            is_complete=True
+        )
+    
+    @classmethod
+    def from_error_response(cls, structured_response: StructuredLLMResponse):
+        """Create ChatResponse from error type response"""
+        return cls(
+            ai_message=structured_response.message,
+            is_complete=False,
+            options=[]
+        )
+    
+    @classmethod
+    def from_fallback_response(cls, structured_response: StructuredLLMResponse):
+        """Create ChatResponse from fallback response"""
+        return cls(
+            ai_message=structured_response.message,
+            is_complete=False,
+            options=[],
+            raw_response=None
+        )
+
+class ImageGenerationRequest(BaseModel):
+    session_id: str
+
+class ImageGenerationResponse(BaseModel):
+    image_base64: str 

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useChat } from './context/ChatContext';
 import ChatBox from './components/ChatBox';
 import ImageResult from './components/ImageResult';
 
-const CHAT_URL = 'http://localhost:8000/bike/chat/complete';
-const IMAGE_URL = 'http://localhost:8000/bike/image/generate';
-const DOWNLOAD_URL = 'http://localhost:8000/bike/image/download';
+// Global configuration
+const API_BASE_URL = 'http://localhost:8000/bike';
+const CHAT_URL = `${API_BASE_URL}/chat/complete`;
+const IMAGE_URL = `${API_BASE_URL}/image/generate`;
+const DOWNLOAD_URL = `${API_BASE_URL}/image/download`;
 
+// Session management utilities
 function getOrCreateSessionId() {
   let id = localStorage.getItem('session_id');
   if (!id) {
@@ -21,6 +24,31 @@ function clearSession() {
   window.location.reload();
 }
 
+// API utilities
+async function makeApiRequest(url: string, body: Record<string, unknown>) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  
+  if (!res.ok) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
+  
+  return res.json();
+}
+
+// Types for API responses
+interface QuestionData {
+  question_text?: string;
+  ai_message?: string;
+  options?: Array<{number: number, text: string, value: string}>;
+  current_step?: number;
+  total_steps?: number;
+  is_complete?: boolean;
+}
+
 const App: React.FC = () => {
   const { messages, setMessages } = useChat();
   const [loading, setLoading] = useState(false);
@@ -33,10 +61,41 @@ const App: React.FC = () => {
   const [customInput, setCustomInput] = useState('');
   const [sessionId] = useState(getOrCreateSessionId());
 
-  // Send message to backend
-  const sendMessage = async (userContent?: string) => {
-    setLoading(true);
+  function resetQuestionState() {
+    setQuestionText('');
+    setOptions([]);
+    setCurrentStep(0);
+    setTotalSteps(0);
+    setCustomInput('');
+  }
+
+  function setQuestionState(data: QuestionData) {
+    setQuestionText(data.question_text || data.ai_message || '');
+    setOptions(data.options || []);
+    setCurrentStep(data.current_step || 0);
+    setTotalSteps(data.total_steps || 15);
+    setIsComplete(false);
+    setCustomInput('');
+  }
+
+  function updateMessages(userContent: string | undefined, aiMessage: string) {
     let newMessages = [...messages];
+    
+    if (userContent) {
+      newMessages = [
+        ...messages,
+        { role: 'user', content: userContent },
+        { role: 'assistant', content: aiMessage },
+      ];
+    } else if (messages.length === 0) {
+      newMessages = [{ role: 'assistant', content: aiMessage }];
+    }
+    
+    setMessages(newMessages);
+  }
+
+  const sendMessage = useCallback(async (userContent?: string) => {
+    setLoading(true);
     let user_message = userContent || '';
     
     if (!userContent && messages.length === 0) {
@@ -44,51 +103,24 @@ const App: React.FC = () => {
     }
     
     try {
-      const res = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId, user_message }),
+      const data = await makeApiRequest(CHAT_URL, { 
+        session_id: sessionId, 
+        user_message 
       });
       
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      
       if (userContent) {
-        newMessages = [
-          ...messages,
-          { role: 'user', content: userContent },
-          { role: 'assistant', content: data.ai_message },
-        ];
+        updateMessages(userContent, data.ai_message);
       } else if (messages.length === 0) {
-        newMessages = [{ role: 'assistant', content: data.ai_message }];
+        updateMessages(undefined, data.ai_message);
       }
       
-      setMessages(newMessages);
-      
-      // Handle structured response data from backend
       if (data.is_complete) {
-        // Chat is complete, show completion message
         setIsComplete(true);
-        setQuestionText('');
-        setOptions([]);
-        setCurrentStep(0);
-        setTotalSteps(0);
-        setCustomInput('');
+        resetQuestionState();
         setLoading(false);
-        
-        // Automatically generate image
         fetchImage();
       } else {
-        // Still in question mode
-        setQuestionText(data.question_text || data.ai_message || '');
-        setOptions(data.options || []);
-        setCurrentStep(data.current_step || 0);
-        setTotalSteps(data.total_steps || 15);
-        setIsComplete(false);
-        setCustomInput('');
+        setQuestionState(data);
         setLoading(false);
       }
     } catch (error) {
@@ -96,38 +128,25 @@ const App: React.FC = () => {
       console.error('Error contacting backend:', error);
       alert('Error contacting backend');
     }
-  };
+  }, [messages.length, sessionId]);
 
-  // Handle custom input submission
-  const handleCustomSubmit = () => {
+  function handleCustomSubmit() {
     if (customInput.trim()) {
       sendMessage(customInput.trim());
     }
-  };
+  }
 
-  // Handle Enter key press in custom input
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  function handleKeyPress(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleCustomSubmit();
     }
-  };
+  }
 
-  // Fetch image from backend
-  const fetchImage = async () => {
+  async function fetchImage() {
     setLoading(true);
     try {
-      const res = await fetch(IMAGE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId }),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
+      const data = await makeApiRequest(IMAGE_URL, { session_id: sessionId });
       setImageBase64(data.image_base64);
       setLoading(false);
     } catch (error) {
@@ -135,38 +154,33 @@ const App: React.FC = () => {
       console.error('Error generating image:', error);
       alert('Error generating image');
     }
-  };
+  }
 
-  // Download image
-  const downloadImage = () => {
+  function downloadImage() {
     const link = document.createElement('a');
     link.href = `${DOWNLOAD_URL}/${sessionId}`;
     link.download = `custom_bike_${sessionId}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }
 
   React.useEffect(() => {
     if (messages.length === 0) {
       sendMessage();
     }
-    // eslint-disable-next-line
-  }, []);
+  }, [messages.length, sendMessage]);
 
-  // Calculate progress percentage
   const progressPercentage = currentStep > 0 ? Math.round((currentStep / totalSteps) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Dream Bike Builder</h1>
           <p className="text-gray-600">Design your perfect motorcycle, one choice at a time</p>
         </div>
 
-        {/* Progress Bar */}
         {currentStep > 0 && !isComplete && (
           <div className="mb-6">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -187,19 +201,14 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Main Content Card */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          {/* Chat History */}
           <ChatBox messages={messages} />
           
-          {/* Current Question */}
           {questionText && !isComplete && (
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">{questionText}</h3>
               
-              {/* Options or Custom Input */}
               {options.length > 0 ? (
-                // Show predefined options
                 <div className="grid gap-3">
                   {options.map((opt) => (
                     <button
@@ -213,7 +222,6 @@ const App: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                // Show custom input field
                 <div className="space-y-3">
                   <div className="flex gap-2">
                     <input
@@ -241,7 +249,6 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {/* Loading State */}
           {loading && (
             <div className="mt-6 text-center">
               <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg">
@@ -252,12 +259,10 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* Image Result */}
         {isComplete && imageBase64 && (
           <div className="bg-white rounded-2xl shadow-xl p-6">
             <ImageResult imageBase64={imageBase64} />
             
-            {/* Action Buttons */}
             <div className="flex gap-4 mt-6 justify-center">
               <button
                 onClick={downloadImage}

@@ -1,80 +1,56 @@
-import openai
 from prompt import SYSTEM_PROMPT
-from dotenv import load_dotenv
+from utils import (
+    get_openai_client, get_summary_prompt, generate_bike_image,
+    save_image_to_file
+)
 import os
-import base64
 
-load_dotenv()
-
-# Model configuration from environment variables
-CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL")
-IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL")
-
-def main():
-    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-    messages = [
+def _initialize_conversation():
+    """Initialize the conversation with system prompt"""
+    return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": "Let's start building my dream bike!"}
     ]
 
-    print("Welcome to the Dream Bike Builder!\n")
+def _get_llm_response(client, messages):
+    """Get response from LLM"""
+    response = client.chat.completions.create(
+        model=os.getenv("OPENAI_CHAT_MODEL"),
+        messages=messages
+    )
+    return response.choices[0].message.content.strip()
 
+def _generate_summary_prompt(client, messages):
+    """Generate summary prompt for image generation"""
+    return get_summary_prompt(messages, client)
+
+def _run_conversation_loop(client, messages):
+    """Run the main conversation loop"""
+    print("Welcome to the Dream Bike Builder!\n")
+    
     while True:
-        response = client.chat.completions.create(
-            model=CHAT_MODEL,
-            messages=messages
-        )
-        llm_message = response.choices[0].message.content.strip()
+        llm_message = _get_llm_response(client, messages)
         print(f"\nAI: {llm_message}\n")
 
         if "<<END_OF_BIKE_SPEC>>" in llm_message:
-            # Ask the LLM to summarize the specs for image generation
             messages.append({"role": "assistant", "content": llm_message})
-            messages.append({
-                "role": "user",
-                "content": (
-                    "Please summarize the above bike specification into a single, concise, and safe prompt (under 1000 characters) "
-                    "suitable for an AI image generator. Only include the essential visual details and user choices. "
-                    "Avoid any language that could violate content or safety policies."
-                )
-            })
-            summary_response = client.chat.completions.create(
-                model=CHAT_MODEL,
-                messages=messages
-            )
-            final_prompt = summary_response.choices[0].message.content.strip()[:1000]
+            final_prompt = _generate_summary_prompt(client, messages)
             print("\nFinal prompt for image generation:\n" + final_prompt + "\n")
-            break
+            return final_prompt
 
         user_input = input("Your answer: ").strip()
         messages.append({"role": "assistant", "content": llm_message})
         messages.append({"role": "user", "content": user_input})
 
-    print("\nGenerating your custom bike image...")
-    image_response = client.responses.create(
-        model=IMAGE_MODEL,
-        input=final_prompt,
-        tools=[{"type": "image_generation"}],
-    )
-    image_data = [
-        output.result
-        for output in image_response.output
-        if output.type == "image_generation_call"
-    ]
+def main():
+    client = get_openai_client()
+    messages = _initialize_conversation()
     
-    if not image_data:
-        raise ValueError("No image data returned from API.")
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
-    base_name = "custom_bike.png"
-    image_path = os.path.join(output_dir, base_name)
-    suffix = 1
-    while os.path.exists(image_path):
-        image_path = os.path.join(output_dir, f"custom_bike ({suffix}).png")
-        suffix += 1
-    with open(image_path, "wb") as f:
-        f.write(base64.b64decode(image_data[0]))
+    final_prompt = _run_conversation_loop(client, messages)
+    
+    print("\nGenerating your custom bike image...")
+    image_base64 = generate_bike_image(final_prompt, client)
+    image_path = save_image_to_file(image_base64, "cli_session")
     print(f"Image saved to {image_path}")
 
 if __name__ == "__main__":
