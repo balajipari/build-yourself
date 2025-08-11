@@ -3,10 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>ForgeLab — Build Legendary Machines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Scroll progress & parallax
+      const progressEl = document.querySelector('.bg-progress');
+      const root = document.documentElement;
+      function onScroll(){
+        const h = document.documentElement.scrollHeight - innerHeight;
+        const p = h > 0 ? (scrollY / h) * 100 : 0;
+        if (progressEl) progressEl.style.width = p + '%';
+        root.style.setProperty('--scrollY', scrollY + 'px');
+      }
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    </script>
   </body>
 </html>

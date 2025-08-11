@@ -1,1 +1,84 @@
 @import "tailwindcss";
+
+:root {
+  --primary: #1A2D4D;
+  --accent: #D93636;
+  --neutral: #C5C5C5;
+}
+
+html, body, #root { height: 100%; }
+
+.bg-garage {
+  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.06), rgba(0,0,0,0) 60%), linear-gradient(180deg, #0b1220 0%, #0a0f19 60%, #0a0f19 100%);
+}
+
+.font-heading { font-family: 'Bebas Neue', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+.font-body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent), #b42020);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 8px 20px rgba(217,54,54,0.3);
+  transition: transform 120ms ease, box-shadow 200ms ease;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 28px rgba(217,54,54,0.4); }
+.btn-secondary {
+  background: transparent;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(8px);
+}
+
+/* Cards & chips */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 16px;
+}
+.card.hover\:lift:hover { transform: translateY(-3px); transition: transform 160ms ease; }
+
+.chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  text-transform: capitalize;
+}
+
+/* Hero visuals (vectorish/cartoonish via gradients + masks) */
+.parallax-layer { position: absolute; inset: 0; pointer-events: none; }
+.layer-bg { background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px, 40px 40px; opacity: .25; transform: translateY(calc(var(--scrollY, 0px) * -0.08)); }
+.layer-mid { background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.07), transparent 40%), radial-gradient(circle at 90% 70%, rgba(217,54,54,0.15), transparent 30%); opacity: .4; transform: translateY(calc(var(--scrollY, 0px) * -0.16)); }
+.layer-fg { background: transparent; transform: translateY(calc(var(--scrollY, 0px) * -0.28)); }
+
+.hero-vehicle { position: absolute; inset: 0; }
+.hero-bike { background: radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(0,0,0,0)), url('/bike-placeholder.svg') center/contain no-repeat; width: 60%; height: 60%; left: 0; top: 10%; filter: drop-shadow(0 12px 24px rgba(0,0,0,0.4)); }
+.hero-car { background: radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(0,0,0,0)), url('/car-placeholder.svg') center/contain no-repeat; width: 60%; height: 60%; right: 0; bottom: 0; position: absolute; transform: translateX(40%); filter: drop-shadow(0 12px 24px rgba(0,0,0,0.4)); }
+.hero-fx { position: absolute; inset: 0; background: radial-gradient(40% 20% at 50% 80%, rgba(217,54,54,0.25), transparent), radial-gradient(50% 20% at 40% 90%, rgba(255,255,255,0.08), transparent); mix-blend-mode: screen; }
+
+.gear-spinner { position: absolute; right: 10%; top: 10%; opacity: .18; font-size: 52px; animation: spin 7s linear infinite; }
+
+/* Carousel */
+.carousel-card { min-width: 280px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 16px; transform: translateZ(0); transition: transform 120ms ease; }
+.carousel-card:hover { transform: translateY(-4px) rotate(.5deg); }
+.carousel-img { width: 100%; aspect-ratio: 16/10; border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); box-shadow: inset 0 -30px 40px rgba(0,0,0,0.25); }
+
+/* Scroll progress bar */
+.bg-progress { height: 3px; width: 0; background: linear-gradient(90deg, var(--accent), #ff6b6b); transition: width 120ms linear; }
+
+/* Reduced motion support */
+html[data-reduce-motion="1"] .gear-spinner { animation: none; }
+html[data-reduce-motion="1"] .layer-bg, html[data-reduce-motion="1"] .layer-mid, html[data-reduce-motion="1"] .layer-fg { transform: none !important; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Scroll driven effects */
+body { counter-reset: scroll; }
+
