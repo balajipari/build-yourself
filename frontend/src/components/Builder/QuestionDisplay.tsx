@@ -28,10 +28,9 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
         <div className="grid gap-3">
           {options.map((opt) => (
             <button
-              key={opt.number}
-              className="w-fit mt-1 text-left p-2.5 py-1 bg-sky-50 border border-gray-300 rounded-xl hover:bg-white hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              key={opt.id}
               onClick={() => onOptionSelect(opt.text)}
-              disabled={loading}
+              className="w-full p-3 text-left bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer"
             >
               <span className="text-gray-700 font-medium">{opt.text}</span>
             </button>

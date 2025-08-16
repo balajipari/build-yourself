@@ -63,7 +63,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
         <button
           onClick={handleSubmit}
           disabled={loading || !value.trim()}
-          className="font-semibold px-3 py-1 h-fit bg-[#8c52ff] text-white rounded-lg hover:bg-white hover:text-[#8c52ff] hover:border-1 hover:border-[#8c52ff] hover:rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="font-semibold px-3 py-1 h-fit bg-[#8c52ff] text-white rounded-lg hover:bg-white hover:text-[#8c52ff] hover:border-1 hover:border-[#8c52ff] hover:rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
          Save
         </button>

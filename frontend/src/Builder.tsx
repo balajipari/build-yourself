@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect } from 'react';
-import { useChat } from './context/ChatContext';
-import { useApi, useSession, useBuilderState } from './hooks';
-import { API_URLS } from './config/api';
-import { MESSAGES } from './config/constants';
-import { withErrorBoundary, Navbar } from './components/common';
 import {
   LeftPanel,
-  RightPanel,
-  ActionButtons,
+  RightPanel
 } from './components/Builder';
-import ImageResult from './components/ImageResult';
+import { withErrorBoundary } from './components/common';
+import { DashboardHeader } from './components/dashboard';
+import { API_URLS } from './config/api';
+import { MESSAGES } from './config/constants';
+import { useChat } from './context/ChatContext';
+import { useApi, useBuilderState, useSession } from './hooks';
 
 const Builder: React.FC = () => {
   const { messages, setMessages } = useChat();
@@ -117,7 +116,7 @@ const Builder: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Navbar />
+      <DashboardHeader />
       
       {/* Main content with top margin for navbar */}
       <div className="pt-20 px-4 pb-4">
@@ -147,6 +146,7 @@ const Builder: React.FC = () => {
             <div className="lg:col-span-2">
               <LeftPanel 
                 messages={messages}
+                onStartOver={resetSession}
               />
             </div>
           </div>

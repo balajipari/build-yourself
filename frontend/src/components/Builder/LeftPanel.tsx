@@ -5,14 +5,23 @@ import type { Message } from '../../types/chat';
 interface LeftPanelProps {
   messages: Message[];
   className?: string;
+  onStartOver: () => void;
 }
 
-const LeftPanel: React.FC<LeftPanelProps> = ({ messages, className = '' }) => {
+const LeftPanel: React.FC<LeftPanelProps> = ({ messages, className = '', onStartOver }) => {
   return (
     <div className={`w-full h-[85vh] ${className}`}>
       <div className="h-full flex flex-col">
         <div className="mb-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-800">Chat History</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-gray-800">Chat History</h2>
+            <button
+              onClick={onStartOver}
+              className="px-4 py-2 bg-[#8c52ff] text-white rounded-lg hover:bg-[#8c52ff]/90 transition-colors duration-200 text-sm font-medium cursor-pointer"
+            >
+              Start Over
+            </button>
+          </div>
           <p className="text-sm text-gray-600">Your conversation with the AI assistant</p>
         </div>
         <div className="flex-1 min-h-0">
