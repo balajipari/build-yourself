@@ -9,7 +9,12 @@ export async function makeApiRequest<T = any>(
 ): Promise<T> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+    let timeoutId: NodeJS.Timeout | null = null;
+    
+    // Only set timeout if TIMEOUT > 0
+    if (API_CONFIG.TIMEOUT > 0) {
+      timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -18,7 +23,10 @@ export async function makeApiRequest<T = any>(
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
+    // Clear timeout if request completes successfully
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const error: ApiError = {

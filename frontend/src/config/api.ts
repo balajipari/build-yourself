@@ -2,11 +2,11 @@ import { API_ENDPOINTS } from './constants';
 
 // API configuration and URL builders
 export const API_CONFIG = {
-  BASE_URL: API_ENDPOINTS.BASE_URL,
-  TIMEOUT: 30000, // 30 seconds
+  BASE_URL: API_ENDPOINTS.BASE_URL || 'http://localhost:5000',
+  TIMEOUT: 0, // No timeout - wait indefinitely
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
-} as const;
+};
 
 export const buildApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
