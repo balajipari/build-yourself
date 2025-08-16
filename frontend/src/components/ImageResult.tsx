@@ -8,7 +8,6 @@ const ImageResult: React.FC<ImageResultProps> = ({ imageBase64 }) => {
   return (
     <div className="text-center">
       <div className="mb-6">
-        <div className="text-4xl mb-2">🎉</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Custom Bike is Ready!</h2>
         <p className="text-gray-600">Here's your dream motorcycle, designed just for you</p>
       </div>
@@ -23,7 +22,7 @@ const ImageResult: React.FC<ImageResultProps> = ({ imageBase64 }) => {
       </div>
       
       <div className="mt-4 text-sm text-gray-500">
-        <p>✨ Generated with AI based on your preferences</p>
+        <p>Generated with AI based on your preferences</p>
       </div>
     </div>
   );

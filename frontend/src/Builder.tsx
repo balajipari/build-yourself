@@ -3,16 +3,12 @@ import { useChat } from './context/ChatContext';
 import { useApi, useSession, useBuilderState } from './hooks';
 import { API_URLS } from './config/api';
 import { MESSAGES } from './config/constants';
-import { withErrorBoundary } from './components/common';
+import { withErrorBoundary, Navbar } from './components/common';
 import {
-  BuilderHeader,
-  ProgressBar,
-  QuestionDisplay,
-  CustomInput,
-  LoadingIndicator,
+  LeftPanel,
+  RightPanel,
   ActionButtons,
 } from './components/Builder';
-import ChatBox from './components/ChatBox';
 import ImageResult from './components/ImageResult';
 
 const Builder: React.FC = () => {
@@ -115,50 +111,49 @@ const Builder: React.FC = () => {
   }, [messages.length, sendMessage]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        <BuilderHeader />
-        
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={totalSteps} 
-        />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Navbar />
+      
+      {/* Main content with top margin for navbar */}
+      <div className="pt-20 px-4 pb-4">
+        <div className="max-w-7xl mx-auto">
+          {/* Two-panel layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-8rem)]">
+            {/* Left Panel - Chat History (35% on large screens) */}
+            <div className="lg:col-span-2">
+              <LeftPanel 
+                messages={messages}
+              />
+            </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <ChatBox messages={messages} />
-
-          <QuestionDisplay
-            questionText={questionText}
-            options={options}
-            isComplete={isComplete}
-            onOptionSelect={sendMessage}
-            loading={loading}
-          />
-
-          {!questionText && !isComplete && (
-            <CustomInput
-              value={customInput}
-              onChange={setCustomInput}
-              onSubmit={handleCustomSubmit}
-              loading={loading}
-            />
-          )}
-
-          <LoadingIndicator 
-            loading={loading} 
-            isComplete={isComplete} 
-          />
-        </div>
-
-        {isComplete && imageBase64 && (
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <ImageResult imageBase64={imageBase64} />
-            <ActionButtons 
-              onDownload={downloadImage}
-              onReset={resetSession}
-            />
+            {/* Right Panel - Progress & Questions (65% on large screens) */}
+            <div className="lg:col-span-3">
+              <RightPanel
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                questionText={questionText}
+                options={options}
+                isComplete={isComplete}
+                customInput={customInput}
+                loading={loading}
+                onOptionSelect={sendMessage}
+                onCustomInputChange={setCustomInput}
+                onCustomSubmit={handleCustomSubmit}
+              />
+            </div>
           </div>
-        )}
+
+          {/* Image Result Section - Full width below panels */}
+          {isComplete && imageBase64 && (
+            <div className="mt-6 bg-white rounded-2xl shadow-xl p-6">
+              <ImageResult imageBase64={imageBase64} />
+              <ActionButtons 
+                onDownload={downloadImage}
+                onReset={resetSession}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

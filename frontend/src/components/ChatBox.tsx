@@ -7,10 +7,9 @@ interface ChatBoxProps {
 
 const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   return (
-    <div className="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
+    <div className="h-full overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
       {messages.length === 0 ? (
         <div className="text-center text-gray-500 mt-8">
-          <div className="text-4xl mb-2">🏍️</div>
           <p>Starting your dream bike journey...</p>
         </div>
       ) : (

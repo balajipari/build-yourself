@@ -29,7 +29,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       </div>
       {totalSteps > 15 && (
         <p className="text-xs text-gray-500 mt-1 text-center">
-          ✨ Custom questions added for detailed specifications
+          Custom questions added for detailed specifications
         </p>
       )}
     </div>
