@@ -55,7 +55,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
           placeholder="Type your custom specification here..."
-          className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+          className={`flex-1 p-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8c52ff] focus:border-transparent ${
             error ? 'border-red-300' : 'border-gray-300'
           }`}
           disabled={loading}
@@ -63,9 +63,9 @@ const CustomInput: React.FC<CustomInputProps> = ({
         <button
           onClick={handleSubmit}
           disabled={loading || !value.trim()}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="font-semibold px-3 py-1 h-fit bg-[#8c52ff] text-white rounded-lg hover:bg-white hover:text-[#8c52ff] hover:border-1 hover:border-[#8c52ff] hover:rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send
+         Save
         </button>
       </div>
       

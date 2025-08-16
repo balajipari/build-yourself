@@ -3,6 +3,8 @@ import ProgressBar from './ProgressBar';
 import QuestionDisplay from './QuestionDisplay';
 import CustomInput from './CustomInput';
 import LoadingIndicator from './LoadingIndicator';
+import ActionButtons from './ActionButtons';
+import ImageResult from '../ImageResult';
 import type { QuestionOption } from '../../types/builder';
 
 interface RightPanelProps {
@@ -13,9 +15,12 @@ interface RightPanelProps {
   isComplete: boolean;
   customInput: string;
   loading: boolean;
-  onOptionSelect: (optionNumber: string) => void;
+  imageBase64: string | null;
+  onOptionSelect: (optionText: string) => void;
   onCustomInputChange: (value: string) => void;
   onCustomSubmit: () => void;
+  onDownload: () => void;
+  onReset: () => void;
   className?: string;
 }
 
@@ -27,15 +32,18 @@ const RightPanel: React.FC<RightPanelProps> = ({
   isComplete,
   customInput,
   loading,
+  imageBase64,
   onOptionSelect,
   onCustomInputChange,
   onCustomSubmit,
+  onDownload,
+  onReset,
   className = '',
 }) => {
   return (
-    <div className={`w-full h-full ${className}`}>
-      <div className="bg-white rounded-2xl shadow-xl p-6 h-full">
-        <div className="mb-6">
+    <div className={`w-full ${className}`}>
+      <div className="space-y-6">
+        <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Build Progress</h2>
           <ProgressBar 
             currentStep={currentStep} 
@@ -51,7 +59,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
           loading={loading}
         />
 
-        {!questionText && !isComplete && (
+        {/* Show custom input when there are no options (empty options array) */}
+        {questionText && options.length === 0 && !isComplete && (
           <CustomInput
             value={customInput}
             onChange={onCustomInputChange}
@@ -64,6 +73,17 @@ const RightPanel: React.FC<RightPanelProps> = ({
           loading={loading} 
           isComplete={isComplete} 
         />
+
+        {/* Image Result Section - Inside the builder progress area */}
+        {isComplete && imageBase64 && (
+          <div className="bg-white rounded-2xl shadow-xl p-6">
+            <ImageResult imageBase64={imageBase64} />
+            <ActionButtons 
+              onDownload={onDownload}
+              onReset={onReset}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

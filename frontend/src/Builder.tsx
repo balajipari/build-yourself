@@ -72,6 +72,11 @@ const Builder: React.FC = () => {
     }
   }, [sessionId, messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState]);
 
+  // Handle option selection with full text
+  const handleOptionSelect = useCallback((optionText: string) => {
+    sendMessage(optionText);
+  }, [sendMessage]);
+
   // Handle custom input submission
   const handleCustomSubmit = useCallback(() => {
     if (customInput.trim()) {
@@ -117,16 +122,9 @@ const Builder: React.FC = () => {
       {/* Main content with top margin for navbar */}
       <div className="pt-20 px-4 pb-4">
         <div className="max-w-7xl mx-auto">
-          {/* Two-panel layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-8rem)]">
-            {/* Left Panel - Chat History (35% on large screens) */}
-            <div className="lg:col-span-2">
-              <LeftPanel 
-                messages={messages}
-              />
-            </div>
-
-            {/* Right Panel - Progress & Questions (65% on large screens) */}
+          {/* Two-panel layout - Swapped positions */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Left Panel - Builder Progress (65% on large screens) */}
             <div className="lg:col-span-3">
               <RightPanel
                 currentStep={currentStep}
@@ -136,23 +134,22 @@ const Builder: React.FC = () => {
                 isComplete={isComplete}
                 customInput={customInput}
                 loading={loading}
-                onOptionSelect={sendMessage}
+                onOptionSelect={handleOptionSelect}
                 onCustomInputChange={setCustomInput}
                 onCustomSubmit={handleCustomSubmit}
-              />
-            </div>
-          </div>
-
-          {/* Image Result Section - Full width below panels */}
-          {isComplete && imageBase64 && (
-            <div className="mt-6 bg-white rounded-2xl shadow-xl p-6">
-              <ImageResult imageBase64={imageBase64} />
-              <ActionButtons 
+                imageBase64={imageBase64}
                 onDownload={downloadImage}
                 onReset={resetSession}
               />
             </div>
-          )}
+
+            {/* Right Panel - Chat History (35% on large screens) */}
+            <div className="lg:col-span-2">
+              <LeftPanel 
+                messages={messages}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

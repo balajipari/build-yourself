@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Message } from '../context/ChatContext';
+import type { Message } from '../types/chat';
 
 interface ChatBoxProps {
   messages: Message[];
@@ -13,20 +13,25 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
           <p>Starting your dream bike journey...</p>
         </div>
       ) : (
-        messages.map((msg, idx) => (
-          <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-            <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-              msg.role === 'user' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-800 border border-gray-200'
-            }`}>
-              <div className="text-xs font-semibold mb-1 opacity-75">
+        <div className="space-y-4">
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+              {/* Sender label above the message card */}
+              <div className="text-xs font-semibold text-gray-600 mb-2 opacity-75">
                 {msg.role === 'user' ? 'You' : 'AI Assistant'}
               </div>
-              <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+               
+              {/* Message card styled like Image 2 - rectangular with slightly rounded corners */}
+              <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                msg.role === 'user' 
+                  ? 'bg-[#8c52ff] text-white rounded-tr-none' // Dark blue for user messages
+                  : 'bg-white text-black border border-gray-200 rounded-tl-none' // White with black text for AI messages
+              }`}>
+                <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

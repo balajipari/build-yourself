@@ -9,13 +9,15 @@ interface LeftPanelProps {
 
 const LeftPanel: React.FC<LeftPanelProps> = ({ messages, className = '' }) => {
   return (
-    <div className={`w-full h-full ${className}`}>
-      <div className="bg-white rounded-2xl shadow-xl p-6 h-full">
-        <div className="mb-4">
+    <div className={`w-full h-[85vh] ${className}`}>
+      <div className="h-full flex flex-col">
+        <div className="mb-4 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-800">Chat History</h2>
           <p className="text-sm text-gray-600">Your conversation with the AI assistant</p>
         </div>
-        <ChatBox messages={messages} />
+        <div className="flex-1 min-h-0">
+          <ChatBox messages={messages} />
+        </div>
       </div>
     </div>
   );
