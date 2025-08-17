@@ -11,6 +11,20 @@ export const API_ENDPOINTS = {
   CHAT: '/bike/chat/complete',
   IMAGE_GENERATE: '/bike/image/generate',
   IMAGE_DOWNLOAD: '/bike/image/download',
+  AUTH: {
+    GOOGLE_URL: '/auth/google/url',
+    CALLBACK: '/auth/callback',
+    ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
+  },
+} as const;
+
+export const FRONTEND_URLS = {
+  BASE_URL: 'http://localhost:5173',
+  DASHBOARD: 'http://localhost:5173/dashboard',
+  SIGNIN: 'http://localhost:5173/signin',
+  CALLBACK: 'http://localhost:5173/auth/callback',
 } as const;
 
 export const STORAGE_KEYS = {

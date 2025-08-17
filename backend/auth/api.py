@@ -1,4 +1,6 @@
+import os
 from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional
@@ -50,16 +52,27 @@ async def get_google_auth_url():
         print(f"Error generating auth URL: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate auth URL: {str(e)}")
 
-@router.get("/callback", response_model=AuthResponse)
+from fastapi.responses import RedirectResponse
+
+@router.get("/callback")
 async def google_oauth_callback(code: str, state: str = None):
-    """Handle Google OAuth callback with authorization code from query parameters"""
+    """Handle Google OAuth callback and redirect to frontend dashboard"""
     try:
         print(f"Received OAuth callback with code: {code[:10]}... and state: {state}")
         result = await exchange_code_for_tokens(code)
-        return AuthResponse(**result)
+        
+        # Create redirect URL with minimal auth data (JWT + user info only)
+        frontend_url = os.getenv("FRONTEND_CALLBACK_URL", "http://localhost:5173/auth/callback")
+        redirect_url = f"{frontend_url}?jwt_token={result['jwt_token']}&user_email={result['user_info']['email']}&user_name={result['user_info']['name']}"
+        
+        print(f"Redirecting to: {frontend_url}")
+        return RedirectResponse(url=redirect_url, status_code=302)
+        
     except Exception as e:
         print(f"OAuth callback failed: {e}")
-        raise HTTPException(status_code=400, detail=f"Failed to exchange code: {str(e)}")
+        # Redirect to frontend with error
+        error_url = os.getenv("FRONTEND_SIGNIN_URL", "http://localhost:5173/signin") + "?error=auth_failed"
+        return RedirectResponse(url=error_url, status_code=302)
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):

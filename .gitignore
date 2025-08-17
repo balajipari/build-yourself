@@ -24,6 +24,13 @@ frontend/*.sln
 frontend/*.sw?
 
 # Byte-compiled / optimized / DLL files
+# Python cache files - ignore all __pycache__ folders anywhere in the project
+**/__pycache__/
+**/*.pyc
+**/*.py[cod]
+**/*$py.class
+
+# Specific backend cache files (keeping for backward compatibility)
 backend/__pycache__/
 backend/*.py[cod]
 backend/*$py.class
@@ -63,6 +70,27 @@ backend/.pytest_cache/
 
 # Jupyter Notebook
 backend/.ipynb_checkpoints
+
+# Python bytecode and cache files (global)
+*.pyc
+*.pyo
+*.pyd
+.Python
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
 
 # VS Code settings
 backend/.vscode/

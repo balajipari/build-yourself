@@ -1,27 +1,12 @@
 import { API_CONFIG } from '../config/api';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-  is_gsuite: boolean;
-  domain?: string;
-}
-
-export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  user_info: User;
-  jwt_token: string;
-}
+import { API_ENDPOINTS } from '../config/constants';
+import type { User, AuthResponse } from '../types/auth';
 
 class AuthService {
-  private baseUrl = `${API_CONFIG.BASE_URL}/auth`;
 
   async getGoogleAuthUrl(): Promise<string> {
     try {
-      const response = await fetch(`${this.baseUrl}/google/url`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_URL}`);
       if (!response.ok) {
         throw new Error('Failed to get auth URL');
       }
@@ -35,7 +20,7 @@ class AuthService {
 
   async handleGoogleCallback(code: string): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/google/callback`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.CALLBACK}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +51,7 @@ class AuthService {
         return null;
       }
 
-      const response = await fetch(`${this.baseUrl}/me`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.ME}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -93,7 +78,7 @@ class AuthService {
         return false;
       }
 
-      const response = await fetch(`${this.baseUrl}/refresh`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +105,7 @@ class AuthService {
     try {
       const token = this.getJWTToken();
       if (token) {
-        await fetch(`${this.baseUrl}/logout`, {
+        await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
