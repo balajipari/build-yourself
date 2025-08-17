@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LeftPanel,
-  RightPanel
+  ChatHistory,
+  BuilderProgress,
+  SubHeader
 } from './components/Builder';
 import { withErrorBoundary, ConfirmationModal } from './components/common';
 import { DashboardHeader } from './components/dashboard';
@@ -222,32 +223,25 @@ const Builder: React.FC = () => {
   }, [sessionId, isResetting, hasInitialized, messages.length, sendMessage]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-100">
       <DashboardHeader />
+      
+      {/* SubHeader with navigation buttons */}
+      <SubHeader 
+        onBackToDashboard={handleBackToDashboard}
+        onStartOver={handleStartOver}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
       
       {/* Main content with top margin for navbar */}
       <div className="pt-20 px-4 pb-4">
         <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
-          <div className="mb-6">
-            <button
-              onClick={handleBackToDashboard}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Dashboard
-            </button>
-          </div>
-
-          {/* Two-panel layout - Swapped positions */}
+          {/* Two-panel layout */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Left Panel - Builder Progress (65% on large screens) */}
             <div className="lg:col-span-3">
-              <RightPanel
-                currentStep={currentStep}
-                totalSteps={totalSteps}
+              <BuilderProgress
                 questionText={questionText}
                 options={options}
                 isComplete={isComplete}
@@ -258,15 +252,13 @@ const Builder: React.FC = () => {
                 onCustomSubmit={handleCustomSubmit}
                 imageBase64={imageBase64}
                 onDownload={downloadImage}
-                onReset={handleStartOver}
               />
             </div>
 
             {/* Right Panel - Chat History (35% on large screens) */}
             <div className="lg:col-span-2">
-              <LeftPanel 
+              <ChatHistory 
                 messages={messages}
-                onStartOver={handleStartOver}
               />
             </div>
           </div>

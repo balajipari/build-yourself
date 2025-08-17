@@ -7,7 +7,12 @@ interface ChatBoxProps {
 
 const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   return (
-    <div className="h-full overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
+    <div className="h-full overflow-y-auto border border-gray-300 rounded-lg p-4 bg-white">
+      {/* Chat History Title */}
+      <div className="mb-4 pb-3 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800">Chat History</h2>
+      </div>
+      
       {messages.length === 0 ? (
         <div className="text-center text-gray-500 mt-8">
           <p>Starting your dream bike journey...</p>
@@ -25,7 +30,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
               <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                 msg.role === 'user' 
                   ? 'bg-[#8c52ff] text-white rounded-tr-none' // Dark blue for user messages
-                  : 'bg-white text-black border border-gray-200 rounded-tl-none' // White with black text for AI messages
+                  : 'bg-blue-50 text-black border border-gray-200 rounded-tl-none' // White with black text for AI messages
               }`}>
                 <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
               </div>
