@@ -26,6 +26,19 @@ export function useBuilderState() {
     }));
   }, []);
 
+  const resetAllState = useCallback(() => {
+    setState({
+      loading: false,
+      isComplete: false,
+      imageBase64: null,
+      questionText: '',
+      options: [],
+      currentStep: 0,
+      totalSteps: APP_CONFIG.DEFAULT_TOTAL_STEPS,
+      customInput: '',
+    });
+  }, []);
+
   const setQuestionState = useCallback((data: QuestionData) => {
     setState(prev => ({
       ...prev,
@@ -57,6 +70,7 @@ export function useBuilderState() {
   return {
     ...state,
     resetQuestionState,
+    resetAllState,
     setQuestionState,
     setLoading,
     setIsComplete,

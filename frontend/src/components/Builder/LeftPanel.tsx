@@ -22,7 +22,6 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ messages, className = '', onStart
               Start Over
             </button>
           </div>
-          <p className="text-sm text-gray-600">Your conversation with the AI assistant</p>
         </div>
         <div className="flex-1 min-h-0">
           <ChatBox messages={messages} />

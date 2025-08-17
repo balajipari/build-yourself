@@ -12,6 +12,8 @@ export function useSession() {
 
   const resetSession = useCallback(() => {
     clearSession();
+    const newId = getOrCreateSessionId();
+    setSessionId(newId);
   }, []);
 
   return {

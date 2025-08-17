@@ -12,7 +12,6 @@ export function getOrCreateSessionId(): string {
 
 export function clearSession(): void {
   localStorage.removeItem(STORAGE_KEYS.SESSION_ID);
-  window.location.reload();
 }
 
 export function getSessionId(): string | null {
