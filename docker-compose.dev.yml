@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: build_yourself_db_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: build_yourself_dev
+      POSTGRES_USER: builduser
+      POSTGRES_PASSWORD: buildpass123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - build_yourself_network_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U builduser -d build_yourself_dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for development
+  redis:
+    image: redis:7-alpine
+    container_name: build_yourself_redis_dev
+    restart: unless-stopped
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - build_yourself_network_dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: build_yourself_api_dev
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://builduser:buildpass123@postgres:5432/build_yourself_dev
+      - REDIS_URL=redis://redis:6379
+      - HOST=0.0.0.0
+      - PORT=5000
+      - DEBUG=True
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - backend_logs_dev:/app/logs
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - build_yourself_network_dev
+    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+
+volumes:
+  postgres_data_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/dev/postgres
+  redis_data_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/dev/redis
+  backend_logs_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/dev/logs
+
+networks:
+  build_yourself_network_dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

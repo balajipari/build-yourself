@@ -45,3 +45,13 @@ _register_routers(app)
 @app.get("/")
 def root():
     return {"message": "Welcome to the Build Yourself API!"}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for Docker and load balancers"""
+    return {
+        "status": "healthy",
+        "service": "Build Yourself API",
+        "version": API_VERSION,
+        "timestamp": "2024-01-01T00:00:00Z"
+    }
