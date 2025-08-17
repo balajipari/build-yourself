@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BsStars } from 'react-icons/bs';
+import { IoCarSportOutline } from 'react-icons/io5';
+import { RiEBikeLine } from 'react-icons/ri';
 
 const CreateNewButton: React.FC = () => {
   const [openCreateDropdown, setOpenCreateDropdown] = useState(false);
   const createDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node)) {
@@ -36,20 +37,21 @@ const CreateNewButton: React.FC = () => {
         <span className="font-semibold">Let's Build</span>
       </button>
 
-      {/* Create New Dropdown Menu */}
       {openCreateDropdown && (
-        <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-28 z-10">
+        <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-32 z-10">
           <button
             onClick={() => handleCreateSelect('bike')}
-            className="w-full px-2 py-1 font-semibold text-center text-gray-600 hover:bg-gray-50 flex items-center cursor-pointer"
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer flex items-center gap-2"
           >
-            <span>Bike</span>
+            <RiEBikeLine className="w-5 h-5 text-[#8c52ff]" />
+            <span className="font-medium">Bike</span>
           </button>
           <button
             onClick={() => handleCreateSelect('car')}
-            className="w-full px-2 py-1 font-semibold text-center text-gray-600 hover:bg-gray-50 flex items-center cursor-pointer"
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer flex items-center gap-2"
           >
-            <span>Car</span>
+            <IoCarSportOutline className="w-5 h-5 text-[#8c52ff]" />
+            <span className="font-medium">Car</span>
           </button>
         </div>
       )}

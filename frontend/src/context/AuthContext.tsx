@@ -7,7 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   checkAuth: () => void;
 }
 
@@ -48,10 +48,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('🔐 Authentication state updated');
   };
 
-  const logout = () => {
-    authService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Always clear local state regardless of backend success
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   // Check authentication status on mount and when localStorage changes

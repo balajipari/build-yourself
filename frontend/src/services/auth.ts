@@ -126,8 +126,8 @@ class AuthService {
 
   private storeTokens(authData: AuthResponse): void {
     localStorage.setItem('jwt_token', authData.jwt_token);
-    localStorage.setItem('refresh_token', authData.refresh_token);
-    localStorage.setItem('access_token', authData.access_token);
+    // localStorage.setItem('refresh_token', authData.refresh_token); // Removed
+    // localStorage.setItem('access_token', authData.access_token); // Removed
     localStorage.setItem('user_info', JSON.stringify(authData.user_info));
   }
 

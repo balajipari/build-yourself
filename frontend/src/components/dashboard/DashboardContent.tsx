@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import AllProjects from './AllProjects';
 import FilterActions from './FilterActions';
 import InProgressProjects from './InProgressProjects';
-import AllProjects from './AllProjects';
-import type { Project, InProgressProject } from './types';
+import { mockAllProjects, mockInProgressProjects } from './mockData';
 
 const DashboardContent: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -10,21 +10,7 @@ const DashboardContent: React.FC = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
 
-  const inProgressProjects: InProgressProject[] = [
-    { id: 1, name: 'Sport Cruiser 2024', status: 'In Progress', progress: 75, lastUpdated: '2 hours ago', image: '/assets/bike-placeholder.svg' },
-    { id: 2, name: 'Adventure Tourer', status: 'In Progress', progress: 45, lastUpdated: '3 days ago', image: '/assets/bike-placeholder.svg' },
-  ];
-
-  const allProjects: Project[] = [
-    { id: 1, name: 'Sport Cruiser 2024', status: 'In Progress', progress: 75, lastUpdated: '2 hours ago', image: '/assets/bike-placeholder.svg', category: 'bikes' },
-    { id: 2, name: 'Classic Chopper', status: 'Completed', progress: 100, lastUpdated: '1 day ago', image: '/assets/bike-placeholder.svg', category: 'bikes' },
-    { id: 3, name: 'Adventure Tourer', status: 'In Progress', progress: 45, lastUpdated: '3 days ago', image: '/assets/bike-placeholder.svg', category: 'bikes' },
-    { id: 4, name: 'Electric Commuter', status: 'Completed', progress: 100, lastUpdated: '1 week ago', image: '/assets/car-placeholder.svg', category: 'cars' },
-    { id: 5, name: 'Off-road Explorer', status: 'Planning', progress: 20, lastUpdated: '2 weeks ago', image: '/assets/bike-placeholder.svg', category: 'bikes' },
-    { id: 6, name: 'Urban Cruiser', status: 'Completed', progress: 100, lastUpdated: '3 weeks ago', image: '/assets/car-placeholder.svg', category: 'cars' },
-  ];
-
-  const filteredProjects = allProjects.filter(project => {
+  const filteredProjects = mockAllProjects.filter(project => {
     if (selectedCategory !== 'all' && project.category !== selectedCategory) return false;
     if (showFavorites) return favorites.includes(project.id);
     return true;
@@ -60,7 +46,6 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div className="px-8 py-8">
-      {/* Filter Actions */}
       <FilterActions
         selectedCategory={selectedCategory}
         sortBy={sortBy}
@@ -70,10 +55,8 @@ const DashboardContent: React.FC = () => {
         onFavoritesToggle={handleFavoritesToggle}
       />
 
-      {/* In Progress Projects Section */}
-      <InProgressProjects projects={inProgressProjects} />
+      <InProgressProjects projects={mockInProgressProjects} />
 
-      {/* All Projects Gallery */}
       <AllProjects
         projects={filteredProjects}
         favorites={favorites}
