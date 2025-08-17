@@ -55,3 +55,49 @@ def health_check():
         "version": API_VERSION,
         "timestamp": "2024-01-01T00:00:00Z"
     }
+
+@app.get("/health/detailed")
+async def detailed_health_check():
+    """Detailed health check for all services"""
+    try:
+        from .dependencies import check_database_health, check_redis_health, check_session_manager_health
+        
+        health_status = {
+            "status": "healthy",
+            "service": "Build Yourself API",
+            "version": API_VERSION,
+            "timestamp": "2024-01-01T00:00:00Z",
+            "services": {}
+        }
+        
+        # Check database health
+        try:
+            health_status["services"]["database"] = check_database_health()
+        except Exception as e:
+            health_status["services"]["database"] = {"status": "unhealthy", "error": str(e)}
+            health_status["status"] = "degraded"
+        
+        # Check Redis health
+        try:
+            health_status["services"]["redis"] = check_redis_health()
+        except Exception as e:
+            health_status["services"]["redis"] = {"status": "unhealthy", "error": str(e)}
+            health_status["status"] = "degraded"
+        
+        # Check session manager health
+        try:
+            health_status["services"]["session_manager"] = check_session_manager_health()
+        except Exception as e:
+            health_status["services"]["session_manager"] = {"status": "unhealthy", "error": str(e)}
+            health_status["status"] = "degraded"
+        
+        return health_status
+        
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "service": "Build Yourself API",
+            "version": API_VERSION,
+            "timestamp": "2024-01-01T00:00:00Z",
+            "error": f"Health check failed: {str(e)}"
+        }

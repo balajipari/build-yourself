@@ -117,3 +117,5 @@ backend/*.swp
 
 # Ignore custom files
 backend/*.png
+
+data/

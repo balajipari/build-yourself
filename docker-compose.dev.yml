@@ -15,7 +15,7 @@ services:
       - postgres_data_dev:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - build_yourself_network_dev
     healthcheck:
