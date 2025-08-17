@@ -3,11 +3,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Builder from './Builder';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
+import GoogleCallback from './components/auth/GoogleCallback';
 
 const App: React.FC = () => {
   // TODO: Add authentication state management
   // Temporarily disabled for testing - will be enabled after API integration
-  const isAuthenticated = true; // Changed from false to true for testing
+  const isAuthenticated = false; // Changed from false to true for testing
 
   return (
     <Router>
@@ -16,6 +17,9 @@ const App: React.FC = () => {
         <Route path="/signin" element={
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <SignIn />
         } />
+        
+        {/* OAuth Callback Route */}
+        <Route path="/auth/callback" element={<GoogleCallback />} />
         
         {/* Protected Routes */}
         <Route path="/dashboard" element={

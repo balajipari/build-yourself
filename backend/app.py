@@ -17,7 +17,7 @@ def _create_app():
     
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=CORS_ORIGINS,
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -30,6 +30,12 @@ def _register_routers(app: FastAPI):
     try:
         from bike.api import router as bike_router
         app.include_router(bike_router, prefix="/bike", tags=["Bike"])
+    except ImportError:
+        pass
+    
+    try:
+        from auth.api import router as auth_router
+        app.include_router(auth_router,  prefix="/auth", tags=["Authentication"])
     except ImportError:
         pass
 

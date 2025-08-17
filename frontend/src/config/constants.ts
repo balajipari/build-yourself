@@ -7,10 +7,10 @@ export const APP_CONFIG = {
 } as const;
 
 export const API_ENDPOINTS = {
-  BASE_URL: 'http://localhost:8000/bike',
-  CHAT: '/chat/complete',
-  IMAGE_GENERATE: '/image/generate',
-  IMAGE_DOWNLOAD: '/image/download',
+  BASE_URL: 'http://localhost:5000',
+  CHAT: '/bike/chat/complete',
+  IMAGE_GENERATE: '/bike/image/generate',
+  IMAGE_DOWNLOAD: '/bike/image/download',
 } as const;
 
 export const STORAGE_KEYS = {
