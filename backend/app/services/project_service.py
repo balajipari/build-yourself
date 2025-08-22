@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, asc, func
 from uuid import UUID
-from ..models import Project, User, UserFavorite, ProjectStatus
+from ..models import Project, User, UserFavorite, PROJECT_STATUS
 from ..schemas import ProjectCreate, ProjectCreateSimple, ProjectUpdate, ProjectSearchParams, PaginatedResponse
 
 
@@ -44,7 +44,7 @@ class ProjectService:
                 name=project_name,
                 description=None,
                 project_type=project_data.project_type,
-                status=ProjectStatus.DRAFT,
+                status=PROJECT_STATUS["DRAFT"],
                 configuration={},
                 image_base64=None,
                 conversation_history=[]

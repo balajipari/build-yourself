@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from uuid import UUID
-from ..models import User, UserStatus
+from ..models import User, USER_STATUS
 from ..schemas import UserCreate, UserUpdate, UserResponse
 
 
@@ -33,14 +33,14 @@ class UserService:
         try:
             user = User(
                 email=user_data.email,
-                username=user_data.username,
                 full_name=user_data.full_name,
                 avatar_url=user_data.avatar_url,
                 google_id=user_data.google_id,
-                status=UserStatus.ACTIVE
+                status=USER_STATUS["ACTIVE"]
             )
             
             self.db.add(user)
+            
             self.db.commit()
             self.db.refresh(user)
             
@@ -55,13 +55,7 @@ class UserService:
         This is used during OAuth signin
         """
         try:
-            # First try to find by Google ID if available
-            if user_data.google_id:
-                existing_user = self.get_user_by_google_id(user_data.google_id)
-                if existing_user:
-                    return existing_user
-            
-            # Then try to find by email
+            # Check if user exists by email
             existing_user = self.get_user_by_email(user_data.email)
             if existing_user:
                 # Update Google ID if not set
@@ -72,7 +66,8 @@ class UserService:
                 return existing_user
             
             # Create new user if not found
-            return self.create_user(user_data)
+            new_user = self.create_user(user_data)
+            return new_user
             
         except Exception as e:
             raise Exception(f"Failed to create or get user: {str(e)}")
@@ -104,7 +99,7 @@ class UserService:
             if not user:
                 return False
             
-            user.status = UserStatus.INACTIVE
+            user.status = USER_STATUS["INACTIVE"]
             self.db.commit()
             
             return True
@@ -123,10 +118,9 @@ class UserService:
             profile = {
                 "id": str(user.id),
                 "email": user.email,
-                "username": user.username,
                 "full_name": user.full_name,
                 "avatar_url": user.avatar_url,
-                "status": user.status.value,
+                "status": user.status,
                 "created_at": user.created_at.isoformat(),
                 "updated_at": user.updated_at.isoformat()
             }
@@ -137,15 +131,14 @@ class UserService:
             raise Exception(f"Failed to get user profile: {str(e)}")
     
     def search_users(self, search_term: str, limit: int = 10) -> list[User]:
-        """Search users by name, username, or email"""
+        """Search users by name or email"""
         try:
             search_pattern = f"%{search_term}%"
             users = self.db.query(User).filter(
                 and_(
-                    User.status == UserStatus.ACTIVE,
+                    User.status == USER_STATUS["ACTIVE"],
                     (
                         User.full_name.ilike(search_pattern) |
-                        User.username.ilike(search_pattern) |
                         User.email.ilike(search_pattern)
                     )
                 )

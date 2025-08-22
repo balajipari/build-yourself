@@ -29,6 +29,8 @@ frontend/*.sw?
 **/*.pyc
 **/*.py[cod]
 **/*$py.class
+*.pyc
+*.env
 
 # Specific backend cache files (keeping for backward compatibility)
 backend/__pycache__/

@@ -54,7 +54,7 @@ services:
       - PGUSER=${DB_USER}
       - PGDATABASE=${DB_NAME}
     volumes:
-      - ./backend/migrations:/migrations:ro
+      - ./backend/app/migrations:/migrations:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,17 +68,23 @@ services:
           sleep 2
         done &&
         echo "Database is ready! Running migrations..." &&
-        if [ -d /migrations ] && [ "$(ls -A /migrations/*.sql 2>/dev/null)" ]; then
-          for file in /migrations/*.sql; do
-            if [ -f "$file" ]; then
-              echo "Running migration: $file" &&
-              psql -h postgres -U ${DB_USER} -d ${DB_NAME} -f "$file"
+        echo "Checking for migration files in /migrations..." &&
+        ls -la /migrations/ &&
+        cd /migrations &&
+        for file in *.sql; do
+          if [ -f "$file" ]; then
+            echo "Running migration: $file" &&
+            echo "=== Migration $file ===" &&
+            psql -h postgres -U ${DB_USER} -d ${DB_NAME} -f "$file" 2>&1 &&
+            if [ $? -eq 0 ]; then
+              echo "Migration $file completed successfully"
+            else
+              echo "Migration $file failed with exit code $?"
+              exit 1
             fi
-          done &&
-          echo "All migrations completed successfully!"
-        else
-          echo "No migration files found, skipping migrations."
-        fi
+          fi
+        done &&
+        echo "All migrations completed successfully!"
       '
 
   # Backend API (Development)

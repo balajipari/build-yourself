@@ -3,26 +3,26 @@ Pydantic schemas for API request/response validation
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from uuid import UUID
-from .models import ProjectStatus, UserStatus
+from .models import USER_STATUS, PROJECT_STATUS
 
 
 # Base schemas
 class UserBase(BaseModel):
     email: str = Field(..., description="User email address")
-    username: Optional[str] = Field(None, description="Username")
     full_name: Optional[str] = Field(None, description="Full name")
     avatar_url: Optional[str] = Field(None, description="Avatar URL")
     google_id: Optional[str] = Field(None, description="Google OAuth ID")
+    status: str = Field(USER_STATUS["ACTIVE"], description="User status")
 
 
 class ProjectBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(None, description="Project description")
     project_type: str = Field(..., min_length=1, max_length=50, description="Project type (e.g., 'bike', 'car')")
-    status: ProjectStatus = Field(ProjectStatus.DRAFT, description="Project status")
+    status: Literal["draft", "in_progress", "completed", "archived"] = Field(PROJECT_STATUS["DRAFT"], description="Project status")
     configuration: Optional[Dict[str, Any]] = Field(None, description="Project configuration data")
     image_base64: Optional[str] = Field(None, description="Generated image as base64 string")
     conversation_history: Optional[List[Dict[str, Any]]] = Field(None, description="Chat conversation history")
@@ -44,16 +44,15 @@ class ProjectCreateSimple(BaseModel):
 
 # Update schemas
 class UserUpdate(BaseModel):
-    username: Optional[str] = Field(None, description="Username")
     full_name: Optional[str] = Field(None, description="Full name")
     avatar_url: Optional[str] = Field(None, description="Avatar URL")
-    status: Optional[UserStatus] = Field(None, description="User status")
+    status: Optional[Literal["active", "inactive", "suspended"]] = Field(None, description="User status")
 
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(None, description="Project description")
-    status: Optional[ProjectStatus] = Field(None, description="Project status")
+    status: Optional[Literal["draft", "in_progress", "completed", "archived"]] = Field(None, description="Project status")
     configuration: Optional[Dict[str, Any] | None] = Field(None, description="Project configuration data")
     image_base64: Optional[str] = Field(None, description="Generated image as base64 string")
     conversation_history: Optional[List[Dict[str, Any]]] = Field(None, description="Chat conversation history")
@@ -62,7 +61,7 @@ class ProjectUpdate(BaseModel):
 # Response schemas
 class UserResponse(UserBase):
     id: UUID
-    status: UserStatus
+    status: str
     created_at: datetime
     updated_at: datetime
     
@@ -91,7 +90,7 @@ class ProjectWithUserResponse(ProjectResponse):
 class ProjectSearchParams(BaseModel):
     search_key: Optional[str] = Field(None, description="Search term for name/description")
     category: Optional[str] = Field(None, description="Filter by project type/category")
-    status: Optional[ProjectStatus] = Field(None, description="Filter by project status")
+    status: Optional[Literal["draft", "in_progress", "completed", "archived"]] = Field(None, description="Filter by project status")
     is_favorite: Optional[bool] = Field(None, description="Filter by favorite status")
     sort_by: str = Field("created_at", description="Sort field (created_at, name, updated_at)")
     sort_order: str = Field("desc", description="Sort order (asc, desc)")
