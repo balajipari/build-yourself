@@ -28,16 +28,30 @@ def _create_app():
 def _register_routers(app: FastAPI):
     """Register API routers"""
     try:
-        from bike.api import router as bike_router
+        from app.bike.api import router as bike_router
         app.include_router(bike_router, prefix="/bike", tags=["Bike"])
     except ImportError:
         pass
     
     try:
-        from auth.api import router as auth_router
+        from app.auth.api import router as auth_router
+        print(f"Auth router loaded successfully: {auth_router}")
         app.include_router(auth_router,  prefix="/auth", tags=["Authentication"])
-    except ImportError:
-        pass
+        print("Auth router registered successfully")
+    except ImportError as e:
+        print(f"Failed to import auth router: {e}")
+    except Exception as e:
+        print(f"Error registering auth router: {e}")
+    
+    try:
+        from app.projects.api import router as projects_router
+        print(f"Projects router loaded successfully: {projects_router}")
+        app.include_router(projects_router, prefix="/projects", tags=["Projects"])
+        print("Projects router registered successfully")
+    except ImportError as e:
+        print(f"Failed to import projects router: {e}")
+    except Exception as e:
+        print(f"Error registering projects router: {e}")
 
 app = _create_app()
 _register_routers(app)
@@ -60,7 +74,7 @@ def health_check():
 async def detailed_health_check():
     """Detailed health check for all services"""
     try:
-        from .dependencies import check_database_health, check_redis_health, check_session_manager_health
+        from app.dependencies import check_database_health, check_redis_health, check_session_manager_health
         
         health_status = {
             "status": "healthy",

@@ -1,11 +1,33 @@
-openai>=1.0.0
-requests>=2.0.0
-python-dotenv>=1.0.0
-uvicorn
-fastapi
+# Core FastAPI dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Database and ORM
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+alembic>=1.12.0
+
+# Redis for session management
+redis>=4.0.0
+
+# Authentication and OAuth
 google-auth>=2.0.0
 google-auth-oauthlib>=1.0.0
 google-auth-httplib2>=0.1.0
 google-api-python-client>=2.0.0
 PyJWT>=2.0.0
-python-multipart
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# HTTP client
+requests>=2.0.0
+
+# AI/OpenAI integration
+openai>=1.0.0
+
+# Additional utilities
+pydantic>=2.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4

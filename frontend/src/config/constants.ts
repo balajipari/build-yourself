@@ -18,6 +18,18 @@ export const API_ENDPOINTS = {
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
   },
+  PROJECTS: {
+    CREATE: '/projects/',
+    LIST: '/projects/',
+    GET: '/projects/{id}',
+    UPDATE: '/projects/{id}',
+    UPDATE_IMAGE: '/projects/{id}/image',
+    UPDATE_CONVERSATION: '/projects/{id}/conversation',
+    DELETE: '/projects/{id}',
+    FAVORITE: '/projects/{id}/favorite',
+    CATEGORIES: '/projects/categories/list',
+    STATS: '/projects/stats/summary',
+  },
 } as const;
 
 export const FRONTEND_URLS = {
