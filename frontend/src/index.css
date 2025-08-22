@@ -12,8 +12,8 @@ html, body, #root { height: 100%; }
   background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.06), rgba(0,0,0,0) 60%), linear-gradient(180deg, #0b1220 0%, #0a0f19 60%, #0a0f19 100%);
 }
 
-.font-heading { font-family: 'Bebas Neue', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-.font-body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+.font-heading { font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+.font-body { font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
 
 /* Buttons */
 .btn-primary {

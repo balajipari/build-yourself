@@ -19,7 +19,7 @@ const AllProjects: React.FC<AllProjectsProps> = ({
 }) => {
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">All Projects</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Creations</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 justify-items-start">
         {projects.map((project) => (
           <ProjectTile

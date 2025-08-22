@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from uuid import UUID
-from app.dependencies import get_db, get_current_user
+from app.dependencies import get_db, get_current_user_jwt
 from app.services.project_service import ProjectService
 from app.services.user_service import UserService
 from app.schemas import (
@@ -19,6 +19,7 @@ from app.schemas import (
     FavoriteResponse,
     ErrorResponse
 )
+
 
 router = APIRouter()
 
@@ -33,7 +34,7 @@ def ping():
 async def create_project(
     project_data: ProjectCreateSimple,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Create a new project with auto-generated name"""
     try:
@@ -51,7 +52,8 @@ async def create_project(
             project_data=project_data
         )
         
-        return project
+        # Convert SQLAlchemy model to Pydantic schema
+        return ProjectResponse.model_validate(project)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -70,7 +72,7 @@ async def list_projects(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Page size"),
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Get paginated list of projects for the authenticated user with search and filters"""
     try:
@@ -112,7 +114,7 @@ async def list_projects(
 async def get_project(
     project_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Get a specific project by ID"""
     try:
@@ -136,7 +138,8 @@ async def get_project(
                 detail="Project not found"
             )
         
-        return project
+        # Convert SQLAlchemy model to Pydantic schema
+        return ProjectResponse.from_orm(project)
     except HTTPException:
         raise
     except Exception as e:
@@ -151,7 +154,7 @@ async def update_project(
     project_id: UUID,
     project_data: ProjectUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Update an existing project"""
     try:
@@ -176,7 +179,8 @@ async def update_project(
                 detail="Project not found"
             )
         
-        return project
+        # Convert SQLAlchemy model to Pydantic schema
+        return ProjectResponse.model_validate(project)
     except HTTPException:
         raise
     except Exception as e:
@@ -191,7 +195,7 @@ async def update_project_image(
     project_id: UUID,
     image_data: dict,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Update project with generated image"""
     try:
@@ -222,7 +226,8 @@ async def update_project_image(
                 detail="Project not found"
             )
         
-        return project
+        # Convert SQLAlchemy model to Pydantic schema
+        return ProjectResponse.model_validate(project)
     except HTTPException:
         raise
     except Exception as e:
@@ -237,7 +242,7 @@ async def update_conversation_history(
     project_id: UUID,
     conversation_data: dict,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Update project conversation history"""
     try:
@@ -268,7 +273,8 @@ async def update_conversation_history(
                 detail="Project not found"
             )
         
-        return project
+        # Convert SQLAlchemy model to Pydantic schema
+        return ProjectResponse.model_validate(project)
     except HTTPException:
         raise
     except Exception as e:
@@ -282,7 +288,7 @@ async def update_conversation_history(
 async def delete_project(
     project_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Delete a project"""
     try:
@@ -320,7 +326,7 @@ async def delete_project(
 async def toggle_favorite(
     project_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Toggle favorite status for a project"""
     try:
@@ -353,7 +359,7 @@ async def toggle_favorite(
 @router.get("/categories/list")
 async def get_project_categories(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Get unique project categories for the authenticated user"""
     try:
@@ -379,7 +385,7 @@ async def get_project_categories(
 @router.get("/stats/summary")
 async def get_project_stats(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_jwt)
 ):
     """Get project statistics for the authenticated user"""
     try:

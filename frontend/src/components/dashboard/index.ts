@@ -1,5 +1,5 @@
 export { default as FilterActions } from './FilterActions';
-export { default as InProgressProjects } from './InProgressProjects';
+export { default as DraftProjects } from './DraftProjects';
 export { default as AllProjects } from './AllProjects';
 export { default as ProjectTile } from './ProjectTile';
 export { default as CreateNewButton } from './CreateNewButton';
@@ -13,5 +13,5 @@ export { default as UserAvatar } from './UserAvatar';
 export { default as UserDropdown } from './UserDropdown';
 export { default as ProfileSection } from './ProfileSection';
 export type { Project, InProgressProject } from './types';
-export { mockInProgressProjects, mockAllProjects } from './mockData';
+export { mockDraftProjects, mockAllProjects } from './mockData';
 

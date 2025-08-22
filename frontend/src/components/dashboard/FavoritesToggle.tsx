@@ -13,7 +13,7 @@ const FavoritesToggle: React.FC<FavoritesToggleProps> = ({
   return (
     <button
       onClick={onToggle}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
+      className={`flex items-center border rounded-md border-gray-300 gap-2 px-3 py-1.5 transition-colors duration-200 cursor-pointer ${
         showFavorites 
           ? 'bg-[#8c52ff] text-white' 
           : 'text-gray-700 hover:text-gray-900'

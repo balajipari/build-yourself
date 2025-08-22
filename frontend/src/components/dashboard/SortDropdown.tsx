@@ -43,14 +43,14 @@ const SortDropdown: React.FC<SortDropdownProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
+        className="flex items-center border rounded-md border-gray-300 gap-2 px-4 py-1.5 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
       >
         <span>{getSortDisplayText(sortBy)}</span>
         <HiOutlineArrowsUpDown height={35} width={35} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[160px] z-10">
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[120px] z-10">
           <button
             onClick={() => handleSortSelect('name-asc')}
             className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 cursor-pointer ${

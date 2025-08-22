@@ -89,6 +89,46 @@ def get_current_user(
         )
 
 
+def get_current_user_jwt(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> dict:
+    """
+    Get current authenticated user from JWT token
+    
+    Args:
+        credentials: HTTP Bearer token
+        
+    Returns:
+        User data dictionary from JWT payload
+    """
+    try:
+        from .auth.google_oauth import verify_jwt_token
+        
+        payload = verify_jwt_token(credentials.credentials)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token"
+            )
+        
+        return {
+            "id": payload["sub"],
+            "email": payload["email"],
+            "name": payload.get("name", ""),
+            "picture": payload.get("picture", ""),
+            "is_gsuite": payload.get("is_gsuite", False),
+            "domain": payload.get("domain", "")
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Authentication failed: {str(e)}"
+        )
+
+
 def get_optional_user(
     request: Request,
     session_manager: RedisSessionManager = Depends(get_session_manager)

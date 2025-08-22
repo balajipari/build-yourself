@@ -1,6 +1,6 @@
 import type { Project, InProgressProject } from './types';
 
-export const mockInProgressProjects: InProgressProject[] = [
+export const mockDraftProjects: InProgressProject[] = [
   { 
     id: 1, 
     name: 'Sport Cruiser 2024', 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CategorySelector } from '../projects/CategorySelector';
+import CreateNewButton from './CreateNewButton';
+
 import { projectService } from '../../services/project';
 import type { Project as ApiProject, ProjectCreateSimple } from '../../types/project';
 import type { Project as DashboardProject, InProgressProject } from './types';
 import FilterActions from './FilterActions';
-import InProgressProjects from './InProgressProjects';
+import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
 
 const DashboardContent: React.FC = () => {
@@ -14,7 +15,7 @@ const DashboardContent: React.FC = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   
   // New state for projects and API integration
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [apiProjects, setApiProjects] = useState<ApiProject[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -54,7 +55,7 @@ const DashboardContent: React.FC = () => {
       setIsLoading(true);
       const projectData: ProjectCreateSimple = { project_type: category };
       await projectService.createProject(projectData);
-      setShowCategorySelector(false);
+      
       // Refresh projects to show the new one
       fetchProjects();
     } catch (error) {
@@ -110,23 +111,25 @@ const DashboardContent: React.FC = () => {
     name: apiProject.name,
     status: apiProject.status,
     progress: apiProject.status === 'completed' ? 100 : 
-              apiProject.status === 'in_progress' ? 50 : 0,
+              apiProject.status === 'in_progress' ? 50 : 
+              apiProject.status === 'draft' ? 0 : 0,
     lastUpdated: apiProject.updated_at,
     image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
   });
 
-  // Filter projects based on current state
+  // Filter projects based on current state (exclude draft projects)
   const filteredProjects = apiProjects
     .filter(project => {
       if (showFavorites && !favorites.includes(parseInt(project.id))) return false;
       if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
+      if (project.status === 'draft') return false; // Exclude draft projects from main list
       return true;
     })
     .map(mapToDashboardProject);
 
-  // Get in-progress projects (projects with status 'in_progress')
-  const inProgressProjects = apiProjects
-    .filter(project => project.status === 'in_progress')
+  // Get draft projects (projects with status 'draft')
+  const draftProjects = apiProjects
+    .filter(project => project.status === 'draft')
     .map(mapToInProgressProject);
 
   return (
@@ -135,17 +138,9 @@ const DashboardContent: React.FC = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
-            <p className="text-gray-600 mt-2">Manage and organize your custom vehicle projects</p>
+            <p className="text-2xl font-semibold text-gray-900">My Projects</p>
           </div>
-          <button
-            onClick={() => setShowCategorySelector(true)}
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-          >
-            <span>+</span>
-            {isLoading ? 'Creating...' : 'Build New Project'}
-          </button>
+          <CreateNewButton onProjectCreated={fetchProjects} />
         </div>
       </div>
 
@@ -159,10 +154,10 @@ const DashboardContent: React.FC = () => {
         onFavoritesToggle={() => setShowFavorites(!showFavorites)}
       />
 
-      {/* In Progress Projects */}
-      <InProgressProjects projects={inProgressProjects} />
+      {/* Continue Working On */}
+      <DraftProjects projects={draftProjects} />
 
-      {/* All Projects */}
+      {/* Your Creations */}
       {isLoading ? (
         <div className="text-center py-8">
           <div className="text-gray-600">Loading projects...</div>
@@ -173,11 +168,9 @@ const DashboardContent: React.FC = () => {
             {apiProjects.length === 0 ? (
               <>
                 <p className="mb-2">No projects found.</p>
-                <p>Create your first project to get started!</p>
               </>
             ) : (
               <>
-                <p className="mb-2">No projects match your current filters.</p>
                 <p>Try adjusting your search criteria or create a new project.</p>
               </>
             )}
@@ -193,13 +186,7 @@ const DashboardContent: React.FC = () => {
         />
       )}
 
-      {/* Category Selector Modal */}
-      {showCategorySelector && (
-        <CategorySelector
-          onSelectCategory={handleCreateProject}
-          onCancel={() => setShowCategorySelector(false)}
-        />
-      )}
+
     </div>
   );
 };

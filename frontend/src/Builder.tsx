@@ -44,6 +44,10 @@ const Builder: React.FC = () => {
 
   // Check if this is a new build session from dashboard
   const isNewBuildSession = location.state?.type;
+  
+  // Check if we're continuing a draft project from URL query
+  const urlParams = new URLSearchParams(location.search);
+  const projectId = urlParams.get('projectId');
 
   // Update messages with new content
   const updateMessages = useCallback((userContent: string | undefined, aiMessage: string) => {
@@ -177,9 +181,18 @@ const Builder: React.FC = () => {
     navigate('/dashboard');
   }, [clearSessionAndReset, navigate]);
 
+  // Load project data if projectId is present in URL
+  useEffect(() => {
+    if (projectId) {
+      console.log('Loading draft project:', projectId);
+      // TODO: Load project data and conversation history
+      // For now, we'll just log that we have a project ID
+    }
+  }, [projectId]);
+
   // Single, clear initialization effect
   useEffect(() => {
-    console.log('Initialization effect:', { isResetting, isNewBuildSession, hasInitialized, sessionId, messagesLength: messages.length });
+    console.log('Initialization effect:', { isResetting, isNewBuildSession, hasInitialized, sessionId, messagesLength: messages.length, projectId });
     
     // Skip if we're currently resetting
     if (isResetting) {
@@ -203,7 +216,7 @@ const Builder: React.FC = () => {
       setHasInitialized(true);
       sendMessage();
     }
-  }, [isNewBuildSession, hasInitialized, isResetting, sessionId, messages.length, sendMessage, clearMessages, resetAllState, resetSession]);
+  }, [isNewBuildSession, hasInitialized, isResetting, sessionId, messages.length, sendMessage, clearMessages, resetAllState, resetSession, projectId]);
 
   // Handle session ID changes (e.g., after reset)
   useEffect(() => {
@@ -235,7 +248,7 @@ const Builder: React.FC = () => {
       />
       
       {/* Main content with top margin for navbar */}
-      <div className="pt-20 px-4 pb-4">
+      <div className="pt-10 px-4 pb-4">
         <div className="max-w-7xl mx-auto">
           {/* Two-panel layout */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

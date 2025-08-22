@@ -31,10 +31,10 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   const getDisplayText = (category: string) => {
     switch (category) {
-      case 'all': return 'All Categories';
+      case 'all': return 'All';
       case 'bikes': return 'Bikes';
       case 'cars': return 'Cars';
-      default: return 'All Categories';
+      default: return 'All';
     }
   };
 
@@ -42,21 +42,21 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
+        className="flex border rounded-md border-gray-300 items-center gap-2 px-4 py-1.5 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
       >
         <span>{getDisplayText(selectedCategory)}</span>
         <BiFilterAlt height={35} width={35} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[160px] z-10">
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[120px] z-10">
           <button
             onClick={() => handleCategorySelect('all')}
             className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 cursor-pointer ${
               selectedCategory === 'all' ? 'text-[#8c52ff] bg-[#8c52ff]/10' : 'text-gray-700'
             }`}
           >
-            All Categories
+            All
           </button>
           <button
             onClick={() => handleCategorySelect('bikes')}

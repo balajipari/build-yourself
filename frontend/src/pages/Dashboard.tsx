@@ -7,7 +7,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <DashboardHeader />
       
-      <div className="pt-20">
+      <div className="pt-10">
         <DashboardContent />
       </div>
     </div>

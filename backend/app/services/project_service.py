@@ -191,8 +191,12 @@ class ProjectService:
             # Calculate total pages
             total_pages = (total + search_params.page_size - 1) // search_params.page_size
             
+            # Convert SQLAlchemy models to Pydantic schemas
+            from ..schemas import ProjectResponse
+            project_schemas = [ProjectResponse.model_validate(project) for project in projects]
+            
             return PaginatedResponse(
-                items=projects,
+                items=project_schemas,
                 total=total,
                 page=search_params.page,
                 page_size=search_params.page_size,

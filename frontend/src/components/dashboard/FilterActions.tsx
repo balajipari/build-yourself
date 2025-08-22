@@ -3,7 +3,6 @@ import SearchBar from './SearchBar';
 import CategoryDropdown from './CategoryDropdown';
 import SortDropdown from './SortDropdown';
 import FavoritesToggle from './FavoritesToggle';
-import CreateNewButton from './CreateNewButton';
 
 interface FilterActionsProps {
   selectedCategory: string;
@@ -41,7 +40,6 @@ const FilterActions: React.FC<FilterActionsProps> = ({
           showFavorites={showFavorites}
           onToggle={onFavoritesToggle}
         />
-        <CreateNewButton />
       </div>
     </div>
   );
