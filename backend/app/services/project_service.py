@@ -113,6 +113,8 @@ class ProjectService:
         except Exception as e:
             self.db.rollback()
             raise Exception(f"Failed to update conversation history: {str(e)}")
+
+
     
     def get_project_by_id(self, project_id: UUID, user_id: UUID) -> Optional[Project]:
         """Get a project by ID for a specific user"""

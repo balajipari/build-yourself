@@ -44,7 +44,9 @@ services:
 
   # Migration Service
   migrations:
-    image: postgres:15-alpine
+    build:
+      context: ./backend
+      dockerfile: migration.dockerfile
     container_name: build_yourself_migrations_dev
     restart: "no"
     environment:
@@ -60,32 +62,7 @@ services:
         condition: service_healthy
     networks:
       - build_yourself_network_dev
-    command: >
-      sh -c '
-        echo "Waiting for database to be ready..." &&
-        until pg_isready -h postgres -U ${DB_USER} -d ${DB_NAME}; do
-          echo "Database not ready, waiting..." &&
-          sleep 2
-        done &&
-        echo "Database is ready! Running migrations..." &&
-        echo "Checking for migration files in /migrations..." &&
-        ls -la /migrations/ &&
-        cd /migrations &&
-        for file in *.sql; do
-          if [ -f "$file" ]; then
-            echo "Running migration: $file" &&
-            echo "=== Migration $file ===" &&
-            psql -h postgres -U ${DB_USER} -d ${DB_NAME} -f "$file" 2>&1 &&
-            if [ $? -eq 0 ]; then
-              echo "Migration $file completed successfully"
-            else
-              echo "Migration $file failed with exit code $?"
-              exit 1
-            fi
-          fi
-        done &&
-        echo "All migrations completed successfully!"
-      '
+    command: ["python", "run_migrations.py"]
 
   # Backend API (Development)
   backend:

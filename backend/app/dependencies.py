@@ -16,12 +16,12 @@ from .session_manager import create_session_manager, RedisSessionManager
 security = HTTPBearer()
 
 # Database
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://builduser:buildpass123@postgres:5432/build_yourself")
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Redis
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
+REDIS_URL = os.getenv("REDIS_URL")
 redis_client = Redis.from_url(REDIS_URL, decode_responses=True)
 
 # Session TTL (1 hour default)

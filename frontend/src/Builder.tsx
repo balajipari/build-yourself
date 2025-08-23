@@ -11,6 +11,7 @@ import { API_URLS } from './config/api';
 import { MESSAGES } from './config/constants';
 import { useChat } from './context/ChatContext';
 import { useApi, useBuilderState, useSession } from './hooks';
+import { projectService } from './services/project';
 
 const Builder: React.FC = () => {
   const navigate = useNavigate();
@@ -45,20 +46,101 @@ const Builder: React.FC = () => {
   // Check if this is a new build session from dashboard
   const isNewBuildSession = location.state?.type;
   
-  // Check if we're continuing a draft project from URL query
-  const urlParams = new URLSearchParams(location.search);
-  const projectId = urlParams.get('projectId');
+  // Get project ID from location state (new project) or URL query (existing project)
+  const projectId = location.state?.projectId || new URLSearchParams(location.search).get('projectId');
+  
+  // Debug logging for project ID
+  if (!projectId) {
+    console.warn('No project ID found');
 
-  // Update messages with new content
-  const updateMessages = useCallback((userContent: string | undefined, aiMessage: string) => {
+  // Update messages with new content and sync to backend
+  const updateMessages = useCallback(async (userContent: string | undefined, aiMessage: string) => {
     let newMessages = [...messages];
     if (userContent) {
       newMessages = [...messages, { role: 'user', content: userContent }, { role: 'assistant', content: aiMessage }];
     } else if (messages.length === 0) {
       newMessages = [{ role: 'assistant', content: aiMessage }];
     }
+    
+    // Update local state immediately
     setMessages(newMessages);
-  }, [messages, setMessages]);
+    
+    // If we have a project ID, update the backend conversation history
+    if (projectId) {
+      try {
+        await projectService.updateConversationHistory(projectId, newMessages);
+      } catch (error) {
+        console.error('Failed to update conversation history:', error);
+      }
+    }
+  }, [messages, setMessages, projectId]);
+
+  // Load project data and conversation history
+  const loadProjectData = useCallback(async (projectId: string) => {
+    try {
+      const project = await projectService.getProject(projectId);
+      
+      if (project.conversation_history && project.conversation_history.length > 0) {
+        // Map ConversationMessage to Message format and filter out system messages
+        const messages = project.conversation_history
+          .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+          .map(msg => {
+            let content = msg.content;
+            
+            // Handle case where AI message content is JSON string (old format)
+            if (msg.role === 'assistant' && typeof content === 'string') {
+              // First, try to extract content from markdown code blocks
+              let extractedContent = content;
+              
+              // Check if content is wrapped in markdown code blocks
+              if (content.includes('```json') && content.includes('```')) {
+                try {
+                  const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+                  if (jsonMatch && jsonMatch[1]) {
+                    const jsonContent = jsonMatch[1].trim();
+                    const parsed = JSON.parse(jsonContent);
+                    if (parsed.message) {
+                      extractedContent = parsed.message;
+                    }
+                  }
+                } catch (e) {
+                  // Fall back to trying to parse the entire content as JSON
+                  try {
+                    const parsed = JSON.parse(content);
+                    if (parsed.message) {
+                      extractedContent = parsed.message;
+                    }
+                  } catch (e2) {
+                    // Use content as-is if parsing fails
+                  }
+                }
+              } else {
+                // Try to parse as regular JSON
+                try {
+                  const parsed = JSON.parse(content);
+                  if (parsed.message) {
+                    extractedContent = parsed.message;
+                  }
+                } catch (e) {
+                  // Not JSON, use content as-is
+                }
+              }
+              
+              content = extractedContent;
+            }
+            
+            return {
+              role: msg.role as 'user' | 'assistant',
+              content: content
+            };
+          });
+        
+        setMessages(messages);
+      }
+    } catch (error) {
+      console.error('Failed to load project data:', error);
+    }
+  }, [setMessages]);
 
   // Send message to API
   const sendMessage = useCallback(async (userContent?: string) => {
@@ -74,7 +156,14 @@ const Builder: React.FC = () => {
     }
 
     try {
-      const data = await chatComplete({ session_id: sessionId, user_message });
+      // Validate project ID before sending
+      const validProjectId = projectId && typeof projectId === 'string' && projectId.trim() !== '' ? projectId : undefined;
+      
+      const data = await chatComplete({ 
+        session_id: sessionId, 
+        user_message,
+        project_id: validProjectId
+      });
       
       if (!data) return;
 
@@ -95,7 +184,7 @@ const Builder: React.FC = () => {
       console.error('Error in chat:', error);
       alert(MESSAGES.ERROR.BACKEND);
     }
-  }, [sessionId, messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState]);
+  }, [sessionId, messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState, projectId]);
 
   // Handle option selection with full text
   const handleOptionSelect = useCallback((optionText: string) => {
@@ -113,7 +202,10 @@ const Builder: React.FC = () => {
   // Fetch generated image
   const fetchImage = useCallback(async () => {
     try {
-      const data = await generateImage({ session_id: sessionId });
+      const data = await generateImage({ 
+        session_id: sessionId,
+        project_id: projectId 
+      });
       if (data) {
         setImageBase64(data.image_base64);
       }
@@ -121,7 +213,7 @@ const Builder: React.FC = () => {
       console.error('Error generating image:', error);
       alert(MESSAGES.ERROR.IMAGE_GENERATION);
     }
-  }, [sessionId, generateImage, setImageBase64]);
+  }, [sessionId, generateImage, setImageBase64, projectId]);
 
   // Download image
   const downloadImage = useCallback(() => {
@@ -140,8 +232,6 @@ const Builder: React.FC = () => {
 
   // Common function to clear session and reset state
   const clearSessionAndReset = useCallback((action: 'start-over' | 'back-to-dashboard') => {
-    console.log(`Clearing session and resetting state for: ${action}`);
-    
     // Set resetting flag to prevent immediate message sending
     setIsResetting(true);
     
@@ -153,11 +243,8 @@ const Builder: React.FC = () => {
     // Reset the initialization flag
     setHasInitialized(false);
     
-    console.log(`State cleared for ${action}, will reset flags in 100ms`);
-    
     // Clear resetting flag after a brief delay
     setTimeout(() => {
-      console.log(`Resetting flags for ${action}, ready for new session`);
       setIsResetting(false);
     }, 100);
   }, [clearMessages, resetAllState, resetSession]);
@@ -181,59 +268,53 @@ const Builder: React.FC = () => {
     navigate('/dashboard');
   }, [clearSessionAndReset, navigate]);
 
-  // Load project data if projectId is present in URL
+
+
+  // Load project data if projectId is present
   useEffect(() => {
     if (projectId) {
-      console.log('Loading draft project:', projectId);
-      // TODO: Load project data and conversation history
-      // For now, we'll just log that we have a project ID
+      loadProjectData(projectId);
     }
-  }, [projectId]);
+  }, [projectId, loadProjectData]);
 
   // Single, clear initialization effect
   useEffect(() => {
-    console.log('Initialization effect:', { isResetting, isNewBuildSession, hasInitialized, sessionId, messagesLength: messages.length, projectId });
-    
     // Skip if we're currently resetting
     if (isResetting) {
-      console.log('Skipping initialization - currently resetting');
       return;
     }
 
     // Handle new build session from dashboard
     if (isNewBuildSession && !hasInitialized) {
-      console.log('New build session detected, clearing state');
       clearMessages();
       resetAllState();
-      resetSession();
       setHasInitialized(true);
-      return; // Don't send message yet, let the session change effect handle it
+      return;
     }
-
-    // Send initial message only once when we have a session and no messages
+    
+    // Send initial message when we have a session and no messages
     if (sessionId && messages.length === 0 && !hasInitialized) {
-      console.log('Initializing chat with session ID:', sessionId);
       setHasInitialized(true);
       sendMessage();
     }
-  }, [isNewBuildSession, hasInitialized, isResetting, sessionId, messages.length, sendMessage, clearMessages, resetAllState, resetSession, projectId]);
+  }, [isNewBuildSession, hasInitialized, isResetting, sessionId, messages.length, sendMessage, clearMessages, resetAllState, projectId]);
 
-  // Handle session ID changes (e.g., after reset)
+  // Handle session ID changes (e.g., after reset or new project creation)
   useEffect(() => {
-    console.log('Session change effect:', { isResetting, hasInitialized, sessionId, messagesLength: messages.length });
-    
     // Only handle session changes when we're not resetting and have initialized
     if (isResetting || !hasInitialized) {
-      console.log('Skipping session change - resetting or not initialized');
       return;
     }
 
     // If session ID changes and we have no messages, send initial message
+    // This handles both new projects and session resets
     if (sessionId && messages.length === 0) {
-      console.log('Session changed, sending initial message:', sessionId);
-      sendMessage();
+      // Add a small delay to ensure everything is ready
+      setTimeout(() => {
+        sendMessage();
+      }, 100);
     }
-  }, [sessionId, isResetting, hasInitialized, messages.length, sendMessage]);
+  }, [sessionId, isResetting, hasInitialized, messages.length, sendMessage, projectId]);
 
   return (
     <div className="min-h-screen bg-gray-100">

@@ -11,7 +11,7 @@ const DraftProjects: React.FC<DraftProjectsProps> = ({ projects }) => {
 
   if (projects.length === 0) return null;
 
-  const handleProjectClick = (projectId: number) => {
+  const handleProjectClick = (projectId: string) => {
     navigate(`/builder?projectId=${projectId}`);
   };
 

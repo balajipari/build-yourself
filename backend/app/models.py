@@ -59,23 +59,10 @@ class Project(Base):
     
     # Relationships
     user = relationship("User", back_populates="projects")
-    chat_history = relationship("ChatHistory", back_populates="project", cascade="all, delete-orphan")
     favorites = relationship("UserFavorite", back_populates="project", cascade="all, delete-orphan")
 
 
-class ChatHistory(Base):
-    __tablename__ = "chat_history"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
-    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True)
-    session_id = Column(String(255), nullable=True, index=True)
-    message_type = Column(String(20), nullable=False)  # 'user', 'assistant'
-    content = Column(Text, nullable=False)
-    message_metadata = Column(JSONB, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    # Relationships
-    project = relationship("Project", back_populates="chat_history")
+
 
 
 class UserFavorite(Base):

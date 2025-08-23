@@ -1,5 +1,5 @@
 export interface Project {
-  id: number;
+  id: string;  // Changed from number to string (UUID)
   name: string;
   status: string;
   progress: number;
@@ -9,7 +9,7 @@ export interface Project {
 }
 
 export interface InProgressProject {
-  id: number;
+  id: string;  // Changed from number to string (UUID)
   name: string;
   status: string;
   progress: number;

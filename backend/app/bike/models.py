@@ -175,6 +175,7 @@ class Message(BaseModel):
 class ChatSessionRequest(BaseModel):
     session_id: str
     user_message: str
+    project_id: Optional[str] = None  # Optional project ID to associate chat with
 
 class ChatResponse(BaseModel):
     ai_message: str
@@ -226,6 +227,7 @@ class ChatResponse(BaseModel):
 
 class ImageGenerationRequest(BaseModel):
     session_id: str
+    project_id: Optional[str] = None  # Optional project ID to save image to project
 
 class ImageGenerationResponse(BaseModel):
     image_base64: str 

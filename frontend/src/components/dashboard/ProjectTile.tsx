@@ -7,9 +7,9 @@ import type { Project } from './types';
 interface ProjectTileProps {
   project: Project;
   isFavorite: boolean;
-  onFavoriteToggle: (projectId: number) => void;
-  onDownload: (projectId: number) => void;
-  onDelete: (projectId: number) => void;
+  onFavoriteToggle: (projectId: string) => void;
+  onDownload: (projectId: string) => void;
+  onDelete: (projectId: string) => void;
 }
 
 const ProjectTile: React.FC<ProjectTileProps> = ({

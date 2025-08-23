@@ -18,7 +18,7 @@ const DashboardContent: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [apiProjects, setApiProjects] = useState<ApiProject[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   // Fetch projects on component mount
   useEffect(() => {
@@ -66,9 +66,9 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  const handleFavoriteToggle = async (projectId: number) => {
+  const handleFavoriteToggle = async (projectId: string) => {
     try {
-      await projectService.toggleFavorite(projectId.toString());
+      await projectService.toggleFavorite(projectId);
       // Refresh projects to show updated favorite status
       fetchProjects();
     } catch (error) {
@@ -76,27 +76,27 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  const handleDownload = (projectId: number) => {
+  const handleDownload = (projectId: string) => {
     // TODO: Implement download functionality
     console.log('Download project:', projectId);
   };
 
-  const handleDelete = async (projectId: number) => {
+  const handleDelete = async (projectId: string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
-        await projectService.deleteProject(projectId.toString());
+        await projectService.deleteProject(projectId);
         // Refresh projects after deletion
         fetchProjects();
       } catch (error) {
         console.error('Failed to delete project:', error);
-        alert('Failed to delete project. Please try again.');
+        alert('Failed to delete project. Please not found');
       }
     }
   };
 
   // Map API projects to dashboard project format
   const mapToDashboardProject = (apiProject: ApiProject): DashboardProject => ({
-    id: parseInt(apiProject.id),
+    id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
     progress: apiProject.status === 'completed' ? 100 : 
@@ -107,7 +107,7 @@ const DashboardContent: React.FC = () => {
   });
 
   const mapToInProgressProject = (apiProject: ApiProject): InProgressProject => ({
-    id: parseInt(apiProject.id),
+    id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
     progress: apiProject.status === 'completed' ? 100 : 
@@ -120,7 +120,7 @@ const DashboardContent: React.FC = () => {
   // Filter projects based on current state (exclude draft projects)
   const filteredProjects = apiProjects
     .filter(project => {
-      if (showFavorites && !favorites.includes(parseInt(project.id))) return false;
+      if (showFavorites && !favorites.includes(project.id)) return false;
       if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
       if (project.status === 'draft') return false; // Exclude draft projects from main list
       return true;

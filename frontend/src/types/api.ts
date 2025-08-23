@@ -8,6 +8,7 @@ export interface ApiResponse<T = any> {
 export interface ChatApiRequest {
   session_id: string;
   user_message: string;
+  project_id?: string;  // Optional project ID to associate chat with
 }
 
 export interface ChatApiResponse {
@@ -21,6 +22,7 @@ export interface ChatApiResponse {
 
 export interface ImageApiRequest {
   session_id: string;
+  project_id?: string;  // Optional project ID to save image to project
 }
 
 export interface ImageApiResponse {

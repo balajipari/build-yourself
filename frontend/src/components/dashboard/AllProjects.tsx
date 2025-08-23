@@ -4,10 +4,10 @@ import type { Project } from './types';
 
 interface AllProjectsProps {
   projects: Project[];
-  favorites: number[];
-  onFavoriteToggle: (projectId: number) => void;
-  onDownload: (projectId: number) => void;
-  onDelete: (projectId: number) => void;
+  favorites: string[];
+  onFavoriteToggle: (projectId: string) => void;
+  onDownload: (projectId: string) => void;
+  onDelete: (projectId: string) => void;
 }
 
 const AllProjects: React.FC<AllProjectsProps> = ({
