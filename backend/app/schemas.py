@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from uuid import UUID
-from .models import USER_STATUS, PROJECT_STATUS
+from .models import UserStatus, ProjectStatus
 
 
 # Base schemas
@@ -15,14 +15,14 @@ class UserBase(BaseModel):
     full_name: Optional[str] = Field(None, description="Full name")
     avatar_url: Optional[str] = Field(None, description="Avatar URL")
     google_id: Optional[str] = Field(None, description="Google OAuth ID")
-    status: str = Field(USER_STATUS["ACTIVE"], description="User status")
+    status: str = Field(UserStatus.ACTIVE, description="User status")
 
 
 class ProjectBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(None, description="Project description")
     project_type: str = Field(..., min_length=1, max_length=50, description="Project type (e.g., 'bike', 'car')")
-    status: Literal["draft", "in_progress", "completed", "archived"] = Field(PROJECT_STATUS["DRAFT"], description="Project status")
+    status: Literal["DRAFT", "IN_PROGRESS", "COMPLETED", "ARCHIVED"] = Field(ProjectStatus.DRAFT, description="Project status")
     configuration: Optional[Dict[str, Any]] = Field(None, description="Project configuration data")
     image_base64: Optional[str] = Field(None, description="Generated image as base64 string")
     conversation_history: Optional[List[Dict[str, Any]]] = Field(None, description="Chat conversation history")
@@ -33,8 +33,11 @@ class UserCreate(UserBase):
     pass
 
 
-class ProjectCreate(ProjectBase):
-    pass
+class ProjectCreate(BaseModel):
+    name: str = Field(..., description="Project name")
+    description: Optional[str] = Field(None, description="Project description")
+    project_type: str = Field(..., description="Project type")
+    status: ProjectStatus = Field(ProjectStatus.DRAFT, description="Project status")
 
 
 class ProjectCreateSimple(BaseModel):
@@ -46,13 +49,13 @@ class ProjectCreateSimple(BaseModel):
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, description="Full name")
     avatar_url: Optional[str] = Field(None, description="Avatar URL")
-    status: Optional[Literal["active", "inactive", "suspended"]] = Field(None, description="User status")
+    status: Optional[Literal["ACTIVE", "INACTIVE", "SUSPENDED"]] = Field(None, description="User status")
 
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(None, description="Project description")
-    status: Optional[Literal["draft", "in_progress", "completed", "archived"]] = Field(None, description="Project status")
+    status: Optional[Literal["DRAFT", "IN_PROGRESS", "COMPLETED", "ARCHIVED"]] = Field(None, description="Project status")
     configuration: Optional[Dict[str, Any] | None] = Field(None, description="Project configuration data")
     image_base64: Optional[str] = Field(None, description="Generated image as base64 string")
     conversation_history: Optional[List[Dict[str, Any]]] = Field(None, description="Chat conversation history")
@@ -67,6 +70,14 @@ class UserResponse(UserBase):
     
     class Config:
         from_attributes = True
+    
+    @classmethod
+    def model_validate(cls, obj):
+        """Custom validation to handle enum conversion"""
+        if hasattr(obj, 'status') and hasattr(obj.status, 'value'):
+            # Convert enum to string value
+            obj.status = obj.status.value
+        return super().model_validate(obj)
 
 
 class ProjectResponse(ProjectBase):
@@ -77,6 +88,17 @@ class ProjectResponse(ProjectBase):
     
     class Config:
         from_attributes = True
+    
+    @classmethod
+    def model_validate(cls, obj):
+        """Custom validation to handle enum conversion"""
+        if hasattr(obj, 'status') and hasattr(obj.status, 'value'):
+            # Convert enum to string value
+            obj.status = obj.status.value
+        if hasattr(obj, 'project_type') and hasattr(obj.project_type, 'value'):
+            # Convert enum to string value if project_type is also an enum
+            obj.project_type = obj.project_type.value
+        return super().model_validate(obj)
 
 
 class ProjectWithUserResponse(ProjectResponse):
@@ -90,7 +112,7 @@ class ProjectWithUserResponse(ProjectResponse):
 class ProjectSearchParams(BaseModel):
     search_key: Optional[str] = Field(None, description="Search term for name/description")
     category: Optional[str] = Field(None, description="Filter by project type/category")
-    status: Optional[Literal["draft", "in_progress", "completed", "archived"]] = Field(None, description="Filter by project status")
+    status: Optional[Literal["DRAFT", "IN_PROGRESS", "COMPLETED", "ARCHIVED"]] = Field(None, description="Filter by project status")
     is_favorite: Optional[bool] = Field(None, description="Filter by favorite status")
     sort_by: str = Field("created_at", description="Sort field (created_at, name, updated_at)")
     sort_order: str = Field("desc", description="Sort order (asc, desc)")

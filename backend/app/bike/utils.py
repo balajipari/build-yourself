@@ -46,7 +46,9 @@ def parse_llm_response(response_text: str, response_model: Type[T]) -> T:
     try:
         cleaned_text = clean_json_response(response_text)
         data = json.loads(cleaned_text)
-        return response_model(**data)
+        result = response_model(**data)
+        return result
+        
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=500, detail=f"Invalid JSON response from LLM: {str(e)}")
     except Exception as e:
@@ -96,8 +98,65 @@ def validate_custom_input(value: str) -> bool:
         client = get_openai_client()
         return validate_input_with_llm(value, client)
     except Exception as e:
-        print(f"LLM validation failed: {e} - falling back to basic validation")
+        # Fallback to basic validation on LLM failure
         return True
+
+def validate_custom_message_for_image_generation(custom_message: str, client) -> dict:
+    """
+    Pre-validate custom message for image generation policy compliance.
+    Returns a dict with validation result and suggestions.
+    """
+    validation_prompt = f"""
+    You are an AI content safety expert. Analyze this custom motorcycle description for potential content policy violations when used in AI image generation.
+    
+    Custom Message: "{custom_message}"
+    
+    Analyze for:
+    1. Violence, weapons, or dangerous content
+    2. Inappropriate or offensive language
+    3. Brand names or copyrighted content
+    4. Safety policy violations
+    
+    Respond in this exact JSON format:
+    {{
+        "is_safe": true/false,
+        "violation_type": "none" or specific violation type,
+        "risk_level": "low/medium/high",
+        "suggestions": ["safer alternative 1", "safer alternative 2", "safer alternative 3"],
+        "explanation": "Brief explanation of why it's safe or what makes it unsafe"
+    }}
+    
+    Examples of safer alternatives:
+    - Instead of "aggressive chopper" → "custom cruiser motorcycle"
+    - Instead of "battle-scarred" → "vintage style"
+    - Instead of "weapon-like" → "performance oriented"
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model=VALIDATION_MODEL,
+            messages=[{"role": "user", "content": validation_prompt}],
+            max_tokens=300,
+            temperature=0.1
+        )
+        
+        result_text = response.choices[0].message.content.strip()
+        
+        # Clean and parse the response
+        cleaned_text = clean_json_response(result_text)
+        validation_result = json.loads(cleaned_text)
+        
+        return validation_result
+        
+    except Exception as e:
+        # Fallback: return a safe default
+        return {
+            "is_safe": False,
+            "violation_type": "validation_error",
+            "risk_level": "medium",
+            "suggestions": ["modern motorcycle", "custom design", "performance bike"],
+            "explanation": "Unable to validate message, please use safer alternatives"
+        }
 
 def initialize_session(session_id: str, system_prompt: str) -> List[dict]:
     """Initialize a new chat session"""
@@ -130,7 +189,8 @@ def validate_custom_fields(bike_spec) -> dict:
         if validate_custom_input(value):
             validated_custom_fields[field_name] = value
         else:
-            print(f"Rejected custom field '{field_name}': '{value}' - validation failed")
+            # Field validation failed, skip it
+            pass
     return validated_custom_fields
 
 def create_image_prompt(specs: dict) -> str:
@@ -164,7 +224,6 @@ def save_image_to_file(image_base64: str, session_id: str) -> str:
     with open(file_path, "wb") as f:
         f.write(image_data)
     
-    print(f"Image saved to: {file_path}")
     return file_path
 
 def get_summary_prompt(messages: List[Dict], client) -> str:
@@ -188,19 +247,26 @@ def get_summary_prompt(messages: List[Dict], client) -> str:
 
 def generate_bike_image(prompt: str, client) -> str:
     """Generate bike image using OpenAI and return base64 string"""
-    image_response = client.responses.create(
-        model=IMAGE_MODEL,
-        input=prompt,
-        tools=[{"type": "image_generation"}],
-    )
-    
-    image_data = [
-        output.result
-        for output in image_response.output
-        if output.type == "image_generation_call"
-    ]
-    
-    if not image_data:
-        raise ValueError("No image data returned from API.")
-    
-    return image_data[0]
+    try:
+        # Prepare image generation parameters
+        image_params = {
+            "model": IMAGE_MODEL,
+            "prompt": prompt,
+            "size": "1024x1024",
+            "n": 1
+        }
+        
+        # Add quality parameter only for DALL-E 3 models
+        if IMAGE_MODEL and "dall-e-3" in IMAGE_MODEL.lower():
+            image_params["quality"] = "standard"
+        
+        image_response = client.images.generate(**image_params)
+        
+        if not image_response.data:
+            raise ValueError("No image data returned from API.")
+        
+        return image_response.data[0].b64_json
+        
+    except Exception as e:
+        # Log error for debugging but don't expose internal details to user
+        raise

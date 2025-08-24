@@ -19,10 +19,10 @@ export interface ConversationMessage {
 }
 
 export enum ProjectStatus {
-  DRAFT = 'draft',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  ARCHIVED = 'archived'
+  DRAFT = 'DRAFT',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  ARCHIVED = 'ARCHIVED'
 }
 
 export interface ProjectCreateSimple {

@@ -99,8 +99,8 @@ const DashboardContent: React.FC = () => {
     id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
-    progress: apiProject.status === 'completed' ? 100 : 
-              apiProject.status === 'in_progress' ? 50 : 0,
+    progress: apiProject.status === 'COMPLETED' ? 100 : 
+              apiProject.status === 'IN_PROGRESS' ? 50 : 0,
     lastUpdated: apiProject.updated_at,
     image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
     category: apiProject.project_type,
@@ -110,9 +110,9 @@ const DashboardContent: React.FC = () => {
     id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
-    progress: apiProject.status === 'completed' ? 100 : 
-              apiProject.status === 'in_progress' ? 50 : 
-              apiProject.status === 'draft' ? 0 : 0,
+    progress: apiProject.status === 'COMPLETED' ? 100 : 
+              apiProject.status === 'IN_PROGRESS' ? 50 : 
+              apiProject.status === 'DRAFT' ? 0 : 0,
     lastUpdated: apiProject.updated_at,
     image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
   });
@@ -122,14 +122,14 @@ const DashboardContent: React.FC = () => {
     .filter(project => {
       if (showFavorites && !favorites.includes(project.id)) return false;
       if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
-      if (project.status === 'draft') return false; // Exclude draft projects from main list
+      if (project.status === 'DRAFT') return false; // Exclude draft projects from main list
       return true;
     })
     .map(mapToDashboardProject);
 
-  // Get draft projects (projects with status 'draft')
+  // Get draft projects (projects with status 'DRAFT')
   const draftProjects = apiProjects
-    .filter(project => project.status === 'draft')
+    .filter(project => project.status === 'DRAFT')
     .map(mapToInProgressProject);
 
   return (

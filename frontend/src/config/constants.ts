@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   CHAT: '/bike/chat/complete',
   IMAGE_GENERATE: '/bike/image/generate',
   IMAGE_DOWNLOAD: '/bike/image/download',
+  VALIDATE_CUSTOM_MESSAGE: '/bike/validate-custom-message',
   AUTH: {
     GOOGLE_URL: '/auth/google/url',
     CALLBACK: '/auth/callback',

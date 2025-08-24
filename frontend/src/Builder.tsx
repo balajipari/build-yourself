@@ -49,10 +49,6 @@ const Builder: React.FC = () => {
   // Get project ID from location state (new project) or URL query (existing project)
   const projectId = location.state?.projectId || new URLSearchParams(location.search).get('projectId');
   
-  // Debug logging for project ID
-  if (!projectId) {
-    console.warn('No project ID found');
-
   // Update messages with new content and sync to backend
   const updateMessages = useCallback(async (userContent: string | undefined, aiMessage: string) => {
     let newMessages = [...messages];
@@ -70,7 +66,7 @@ const Builder: React.FC = () => {
       try {
         await projectService.updateConversationHistory(projectId, newMessages);
       } catch (error) {
-        console.error('Failed to update conversation history:', error);
+        // Failed to update conversation history, continue with local state
       }
     }
   }, [messages, setMessages, projectId]);
@@ -329,7 +325,7 @@ const Builder: React.FC = () => {
       />
       
       {/* Main content with top margin for navbar */}
-      <div className="pt-10 px-4 pb-4">
+      <div className="mt-5 pt-10 px-4 pb-4">
         <div className="max-w-7xl mx-auto">
           {/* Two-panel layout */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -346,6 +342,7 @@ const Builder: React.FC = () => {
                 onCustomSubmit={handleCustomSubmit}
                 imageBase64={imageBase64}
                 onDownload={downloadImage}
+                isValidating={false}
               />
             </div>
 

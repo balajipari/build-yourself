@@ -65,7 +65,7 @@ async def create_project(
 async def list_projects(
     search_key: Optional[str] = Query(None, description="Search term for name/description"),
     category: Optional[str] = Query(None, description="Filter by project type/category"),
-    status: Optional[str] = Query(None, description="Filter by project status"),
+    project_status: Optional[str] = Query(None, description="Filter by project status"),
     is_favorite: Optional[bool] = Query(None, description="Filter by favorite status"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", description="Sort order (asc/desc)"),
@@ -88,7 +88,7 @@ async def list_projects(
         search_params = ProjectSearchParams(
             search_key=search_key,
             category=category,
-            status=status,
+            status=project_status,
             is_favorite=is_favorite,
             sort_by=sort_by,
             sort_order=sort_order,
@@ -139,7 +139,7 @@ async def get_project(
             )
         
         # Convert SQLAlchemy model to Pydantic schema
-        return ProjectResponse.from_orm(project)
+        return ProjectResponse.model_validate(project)
     except HTTPException:
         raise
     except Exception as e:

@@ -239,6 +239,38 @@ class ProjectService {
       throw error;
     }
   }
+
+  async validateCustomMessage(message: string): Promise<{
+    is_safe: boolean;
+    suggestions: string[];
+    explanation: string;
+    risk_level: string;
+  }> {
+    try {
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VALIDATE_CUSTOM_MESSAGE}`,
+        {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify({ message: message.trim() }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to validate custom message: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+        // Fallback: return a safe default
+        return {
+            is_safe: true,
+            suggestions: [],
+            explanation: 'Validation service unavailable, proceeding with input',
+            risk_level: 'unknown'
+        };
+    }
+  }
 }
 
 export const projectService = new ProjectService();

@@ -18,6 +18,7 @@ interface BuilderProgressProps {
   onCustomSubmit: () => void;
   onDownload: () => void;
   className?: string;
+  isValidating?: boolean;
 }
 
 const BuilderProgress: React.FC<BuilderProgressProps> = ({
@@ -32,6 +33,7 @@ const BuilderProgress: React.FC<BuilderProgressProps> = ({
   onCustomSubmit,
   onDownload,
   className = '',
+  isValidating = false,
 }) => {
   return (
     <div className={`w-full ${className}`}>
@@ -51,6 +53,7 @@ const BuilderProgress: React.FC<BuilderProgressProps> = ({
             onChange={onCustomInputChange}
             onSubmit={onCustomSubmit}
             loading={loading}
+            isValidating={isValidating}
           />
         )}
 

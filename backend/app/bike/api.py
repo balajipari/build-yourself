@@ -10,16 +10,18 @@ from .utils import (
     get_openai_client, parse_llm_response, validate_custom_input,
     initialize_session, get_session_messages, track_custom_followup,
     validate_custom_fields, create_image_prompt, save_image_to_file,
-    generate_bike_image, session_store, image_files, bike_specs
+    generate_bike_image, session_store, image_files, bike_specs,
+    validate_custom_message_for_image_generation
 )
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.services.project_service import ProjectService
-from app.models import Project
+from app.models import Project, ProjectStatus
 from uuid import UUID
 import json
+import traceback
 
 router = APIRouter()
 
@@ -79,21 +81,19 @@ def save_bike_configuration(project_id: str, structured_response):
             bike_spec_dict = bike_spec.model_dump()
             configuration = {
                 "bike_specification": bike_spec_dict,
-                "completion_timestamp": datetime.utcnow().isoformat(),
-                "status": "completed"
+                "completion_timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": ProjectStatus.COMPLETED.value
             }
             
             # Update project configuration
             project.configuration = configuration
-            project.status = "completed"
+            project.status = ProjectStatus.COMPLETED
             
             try:
                 db.commit()
                 db.refresh(project)
-                print(f"✅ Bike configuration saved to project {project_id}")
             except Exception as e:
                 db.rollback()
-                print(f"❌ Error updating bike configuration: {e}")
                 return
         else:
             print(f"❌ No bike specification found for project {project_id}")
@@ -149,13 +149,61 @@ def save_image_to_project(project_id: str, image_base64: str):
 def ping():
     return {"message": "Bike module is alive!"}
 
+@router.post("/validate-custom-message")
+async def validate_custom_message(request: dict):
+    """
+    Validate a custom message for image generation policy compliance.
+    Returns validation result with suggestions for safer alternatives.
+    """
+    try:
+        custom_message = request.get("message", "").strip()
+        if not custom_message:
+            raise HTTPException(status_code=400, detail="Custom message is required")
+        
+        if len(custom_message) > 500:
+            raise HTTPException(status_code=400, detail="Custom message too long (max 500 characters)")
+        
+        # Get OpenAI client
+        client = get_openai_client()
+        
+        # Validate the custom message
+        validation_result = validate_custom_message_for_image_generation(custom_message, client)
+        
+        return {
+            "message": custom_message,
+            "validation_result": validation_result,
+            "is_safe": validation_result.get("is_safe", False),
+            "suggestions": validation_result.get("suggestions", []),
+            "explanation": validation_result.get("explanation", ""),
+            "risk_level": validation_result.get("risk_level", "unknown")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error validating custom message: {e}")
+        raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
+
 @router.post("/chat/complete", response_model=ChatResponse)
 def chat_complete(request: ChatSessionRequest):
     client = get_openai_client()
     session_id = request.session_id
     project_id = request.project_id
     messages = get_session_messages(session_id, STRUCTURED_SYSTEM_PROMPT)
-    messages.append({"role": "user", "content": request.user_message})
+    
+    # If the user message is empty and there is a project_id, fetch project conversations
+    if (not request.user_message or request.user_message.strip() == "") and project_id:
+        project_convos = fetch_project_conversations(project_id)
+        if project_convos is not None:
+            # Extend messages with project conversations instead of appending the array
+            if isinstance(project_convos, list):
+                messages.extend(project_convos)
+            else:
+                messages.append(project_convos)
+        else:
+            messages.append({"role": "user", "content": request.user_message})
+    else:
+        messages.append({"role": "user", "content": request.user_message})
 
     try:
         response = client.chat.completions.create(
@@ -163,7 +211,20 @@ def chat_complete(request: ChatSessionRequest):
             messages=messages
         )
         ai_message = response.choices[0].message.content.strip()
-        structured_response = parse_llm_response(ai_message, StructuredLLMResponse)
+        
+        try:
+            structured_response = parse_llm_response(ai_message, StructuredLLMResponse)
+        except Exception as parse_error:
+            # Try to extract a readable message from the AI response
+            readable_content = extract_readable_content(ai_message)
+            
+            # Return a fallback response instead of crashing
+            return ChatResponse(
+                type="error",
+                content="I'm having trouble processing your request. Please try again.",
+                message=readable_content or "Please try again with a different approach."
+            )
+        
         messages.append({"role": "assistant", "content": ai_message})
         session_store[session_id] = messages
         
@@ -197,6 +258,36 @@ def chat_complete(request: ChatSessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+def fetch_project_conversations(project_id):
+    """
+    Fetch the conversation history from the project's conversation_history column.
+    Returns a list of messages or None if not found.
+    """
+    # Check the directory before running any command (custom rule)
+    try:
+        project_uuid = UUID(project_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid project_id format")
+    db = next(get_db())
+    try:
+        project = db.query(Project).filter(Project.id == project_uuid).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        # Use conversation_history instead of conversation
+        if hasattr(project, "conversation_history") and project.conversation_history:
+            try:
+                if isinstance(project.conversation_history, str):
+                    conversation_history = json.loads(project.conversation_history)
+                else:
+                    conversation_history = project.conversation_history
+                return conversation_history
+            except Exception as e:
+                return project.conversation_history
+        return None
+    finally:
+        db.close()
+
 @router.post("/image/generate", response_model=ImageGenerationResponse)
 def generate_image(request: ImageGenerationRequest):
     client = get_openai_client()
@@ -211,6 +302,7 @@ def generate_image(request: ImageGenerationRequest):
     try:
         specs = bike_spec.get_image_generation_specs()
         summary_prompt = create_image_prompt(specs)
+        
         image_base64 = generate_bike_image(summary_prompt, client)
         
         file_path = save_image_to_file(image_base64, session_id)
@@ -221,11 +313,29 @@ def generate_image(request: ImageGenerationRequest):
             try:
                 save_image_to_project(project_id, image_base64)
             except Exception as e:
-                print(f"❌ Error saving image: {e}")
+                # Image saving failed, but continue with response
+                pass
         
         return ImageGenerationResponse(image_base64=image_base64)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_message = str(e)
+        
+        # Handle content policy violations specifically
+        if "content_policy_violation" in error_message.lower() or "safety system" in error_message.lower():
+            raise HTTPException(
+                status_code=500, 
+                detail="Image cannot be generated due to content policy violations. Please use safer, non-violent language in your bike description."
+            )
+        
+        # Handle other OpenAI API errors
+        if "openai" in error_message.lower() or "api" in error_message.lower():
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Image generation failed: {error_message}"
+            )
+        
+        # Generic error
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {error_message}")
 
 @router.get("/image/download/{session_id}")
 def download_image(session_id: str):

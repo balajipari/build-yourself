@@ -2,11 +2,13 @@
 User service layer for business logic
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, or_, desc, asc
 from uuid import UUID
-from ..models import User, USER_STATUS
+import json
+
+from ..models import User, UserStatus
 from ..schemas import UserCreate, UserUpdate, UserResponse
 
 
@@ -36,7 +38,7 @@ class UserService:
                 full_name=user_data.full_name,
                 avatar_url=user_data.avatar_url,
                 google_id=user_data.google_id,
-                status=USER_STATUS["ACTIVE"]
+                status=UserStatus.ACTIVE
             )
             
             self.db.add(user)
@@ -99,7 +101,7 @@ class UserService:
             if not user:
                 return False
             
-            user.status = USER_STATUS["INACTIVE"]
+            user.status = UserStatus.INACTIVE
             self.db.commit()
             
             return True
@@ -136,7 +138,7 @@ class UserService:
             search_pattern = f"%{search_term}%"
             users = self.db.query(User).filter(
                 and_(
-                    User.status == USER_STATUS["ACTIVE"],
+                    User.status == UserStatus.ACTIVE,
                     (
                         User.full_name.ilike(search_pattern) |
                         User.email.ilike(search_pattern)

@@ -107,7 +107,7 @@ class BikeSpecification(BaseModel):
         specs = {}
         
         # Add predefined fields
-        for field, value in self.dict().items():
+        for field, value in self.model_dump().items():
             if field != 'custom_fields' and value is not None:
                 specs[field] = value
         
@@ -133,7 +133,7 @@ class BikeSpecification(BaseModel):
     
     def get_total_fields_count(self) -> int:
         """Get total number of fields (predefined + custom)"""
-        predefined_count = sum(1 for value in self.dict().values() 
+        predefined_count = sum(1 for value in self.model_dump().values() 
                               if value is not None and value != self.custom_fields)
         return predefined_count + len(self.custom_fields)
 
@@ -184,7 +184,7 @@ class ChatResponse(BaseModel):
     options: Optional[List[dict]] = None
     current_step: Optional[int] = None
     total_steps: Optional[int] = None
-    raw_response: dict = None
+    raw_response: Optional[dict] = None
     
     @classmethod
     def from_question_response(cls, structured_response: StructuredLLMResponse, question_content: QuestionResponse):

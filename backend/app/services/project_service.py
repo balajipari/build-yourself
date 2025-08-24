@@ -6,7 +6,9 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, asc, func
 from uuid import UUID
-from ..models import Project, User, UserFavorite, PROJECT_STATUS
+import json
+
+from ..models import Project, User, UserFavorite, ProjectStatus
 from ..schemas import ProjectCreate, ProjectCreateSimple, ProjectUpdate, ProjectSearchParams, PaginatedResponse
 
 
@@ -28,10 +30,10 @@ class ProjectService:
             ).scalar()
             
             # Generate name with increment
-            return f"Untitled ({count + 1})"
+            return f"Untitled {project_type} ({count + 1})"
         except Exception:
             # Fallback to simple name if counting fails
-            return f"Untitled {project_type}"
+            return f"Untitled {project_type} {project_type}"
     
     def create_project_simple(self, user_id: UUID, project_data: ProjectCreateSimple) -> Project:
         """Create a new project with auto-generated name"""
@@ -44,7 +46,7 @@ class ProjectService:
                 name=project_name,
                 description=None,
                 project_type=project_data.project_type,
-                status=PROJECT_STATUS["DRAFT"],
+                status=ProjectStatus.DRAFT,
                 configuration={},
                 image_base64=None,
                 conversation_history=[]
