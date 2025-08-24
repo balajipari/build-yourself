@@ -16,8 +16,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   if (currentStep === 0) return null;
 
   return (
-    <div className={`mb-6 ${className}`}>
-      <div className="flex justify-between text-sm text-gray-600 mb-2">
+    <div className={`mb-10 ${className}`}>
+      <div className="flex justify-between text-sm text-gray-600 mt-6 mb-2">
         <span>Step {currentStep} of {totalSteps}</span>
         <span>{progressPercentage}% Complete</span>
       </div>

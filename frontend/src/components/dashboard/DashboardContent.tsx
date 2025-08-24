@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import CreateNewButton from './CreateNewButton';
 
 import { projectService } from '../../services/project';
-import type { Project as ApiProject, ProjectCreateSimple } from '../../types/project';
+import type { ProjectSearch, ProjectCreateSimple } from '../../types/project';
 import type { Project as DashboardProject, InProgressProject } from './types';
 import FilterActions from './FilterActions';
 import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
+import { formatReadableTime } from '../../utils/time';
 
 const DashboardContent: React.FC = () => {
   // Existing state for filters
@@ -17,7 +18,7 @@ const DashboardContent: React.FC = () => {
   // New state for projects and API integration
 
   const [isLoading, setIsLoading] = useState(false);
-  const [apiProjects, setApiProjects] = useState<ApiProject[]>([]);
+  const [apiProjects, setApiProjects] = useState<ProjectSearch[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
 
   // Fetch projects on component mount
@@ -95,25 +96,23 @@ const DashboardContent: React.FC = () => {
   };
 
   // Map API projects to dashboard project format
-  const mapToDashboardProject = (apiProject: ApiProject): DashboardProject => ({
+  const mapToDashboardProject = (apiProject: ProjectSearch): DashboardProject => ({
     id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
     progress: apiProject.status === 'COMPLETED' ? 100 : 
               apiProject.status === 'IN_PROGRESS' ? 50 : 0,
-    lastUpdated: apiProject.updated_at,
+    lastUpdated: apiProject.completion_timestamp ? formatReadableTime(apiProject.completion_timestamp) : 'recently',
     image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
     category: apiProject.project_type,
   });
 
-  const mapToInProgressProject = (apiProject: ApiProject): InProgressProject => ({
+  const mapToInProgressProject = (apiProject: ProjectSearch): InProgressProject => ({
     id: apiProject.id,
     name: apiProject.name,
     status: apiProject.status,
-    progress: apiProject.status === 'COMPLETED' ? 100 : 
-              apiProject.status === 'IN_PROGRESS' ? 50 : 
-              apiProject.status === 'DRAFT' ? 0 : 0,
-    lastUpdated: apiProject.updated_at,
+    progress: apiProject.progress || 0, // Use progress from API for draft projects
+    lastUpdated: apiProject.completion_timestamp ? formatReadableTime(apiProject.completion_timestamp) : 'recently',
     image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
   });
 

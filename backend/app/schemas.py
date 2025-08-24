@@ -3,10 +3,13 @@ Pydantic schemas for API request/response validation
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict, Any, Literal
+from typing import Optional, List, Dict, Any, Literal, Generic, TypeVar
 from datetime import datetime
 from uuid import UUID
 from .models import UserStatus, ProjectStatus
+
+# Generic type for paginated items
+T = TypeVar('T')
 
 
 # Base schemas
@@ -80,6 +83,72 @@ class UserResponse(UserBase):
         return super().model_validate(obj)
 
 
+class ProjectSearchResponse(BaseModel):
+    """Simplified project response for search results - only essential fields"""
+    id: UUID
+    name: str
+    description: Optional[str]
+    project_type: str
+    status: str
+    image_base64: Optional[str] = None  # Generated image as base64 string
+    completion_timestamp: Optional[datetime] = None
+    progress: Optional[int] = None  # Progress for draft projects (0-100)
+    
+    class Config:
+        from_attributes = True
+    
+    @classmethod
+    def model_validate(cls, obj):
+        """Custom validation to handle enum conversion and calculate progress"""
+        # Convert enum to string value if needed
+        if hasattr(obj, 'status') and hasattr(obj.status, 'value'):
+            obj.status = obj.status.value
+        if hasattr(obj, 'project_type') and hasattr(obj.project_type, 'value'):
+            obj.project_type = obj.project_type.value
+        
+        # Get image_base64 from the object
+        image_base64 = getattr(obj, 'image_base64', None)
+        
+        # Calculate completion timestamp from configuration if available
+        completion_timestamp = None
+        if hasattr(obj, 'configuration') and obj.configuration:
+            if isinstance(obj.configuration, dict):
+                completion_timestamp = obj.configuration.get('completion_timestamp')
+        
+        # Calculate progress for draft projects
+        progress = None
+        if hasattr(obj, 'status') and obj.status == 'DRAFT':
+            if hasattr(obj, 'conversation_history') and obj.conversation_history:
+                # Progress = (conversation length / total expected questions) * 100
+                # Assuming 15 is the base number of questions, plus any custom questions
+                conversation_length = len(obj.conversation_history)
+                total_questions = 15  # Base questions
+                
+                # If we have custom fields in configuration, add them to total
+                if hasattr(obj, 'configuration') and obj.configuration:
+                    if isinstance(obj.configuration, dict):
+                        custom_fields = obj.configuration.get('bike_specification', {}).get('custom_fields', {})
+                        if custom_fields:
+                            total_questions += len(custom_fields)
+                
+                # Calculate percentage: (completed / total) * 100
+                progress = min(100, int((conversation_length / total_questions) * 100))
+        
+        # Create a new object with calculated fields
+        obj_dict = {
+            'id': obj.id,
+            'name': obj.name,
+            'description': obj.description,
+            'project_type': obj.project_type,
+            'status': obj.status,
+            'image_base64': image_base64,
+            'completion_timestamp': completion_timestamp,
+            'progress': progress
+        }
+        
+        return super().model_validate(obj_dict)
+
+
 class ProjectResponse(ProjectBase):
     id: UUID
     user_id: UUID
@@ -134,8 +203,8 @@ class ProjectSearchParams(BaseModel):
 
 
 # Pagination response
-class PaginatedResponse(BaseModel):
-    items: List[Any]
+class PaginatedResponse(BaseModel, Generic[T]):
+    items: List[T]
     total: int
     page: int
     page_size: int

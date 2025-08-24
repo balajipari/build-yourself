@@ -13,6 +13,7 @@ from app.schemas import (
     ProjectCreateSimple,
     ProjectUpdate, 
     ProjectResponse, 
+    ProjectSearchResponse,
     ProjectSearchParams,
     PaginatedResponse,
     FavoriteToggle,
@@ -61,7 +62,7 @@ async def create_project(
         )
 
 
-@router.get("/", response_model=PaginatedResponse)
+@router.get("/", response_model=PaginatedResponse[ProjectSearchResponse])
 async def list_projects(
     search_key: Optional[str] = Query(None, description="Search term for name/description"),
     category: Optional[str] = Query(None, description="Filter by project type/category"),

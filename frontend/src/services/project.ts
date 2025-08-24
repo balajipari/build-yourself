@@ -2,6 +2,7 @@ import { API_CONFIG } from '../config/api';
 import { API_ENDPOINTS } from '../config/constants';
 import type { 
   Project, 
+  ProjectSearch,
   ProjectCreateSimple,
   ProjectUpdate, 
   ProjectSearchParams, 
@@ -39,7 +40,7 @@ class ProjectService {
     }
   }
 
-  async getProjects(searchParams: ProjectSearchParams): Promise<PaginatedResponse<Project>> {
+  async getProjects(searchParams: ProjectSearchParams): Promise<PaginatedResponse<ProjectSearch>> {
     try {
       const queryParams = new URLSearchParams();
       

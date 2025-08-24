@@ -49,7 +49,7 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 max-w-xs w-full">
       {/* Project Image with Heart Icon */}
-      <div className="relative h-40 bg-gray-100">
+      <div className="relative h-64 bg-gray-100">
         <img 
           src={project.image} 
           alt={project.name}
@@ -100,10 +100,10 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
       </div>
       
       {/* Project Info - Name and Time on same line */}
-      <div className="p-3">
+      <div className="p-3 py-4">
         <div className="flex items-center justify-between">
           <h3 className="font-medium text-gray-900 truncate flex-1">{project.name}</h3>
-          <span className="text-xs text-gray-500 ml-2">{project.lastUpdated}</span>
+          <span className="text text-gray-500 mx-2">{project.lastUpdated}</span>
         </div>
       </div>
     </div>

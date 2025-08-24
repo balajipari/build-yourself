@@ -26,22 +26,30 @@ const DraftProjects: React.FC<DraftProjectsProps> = ({ projects }) => {
             onClick={() => handleProjectClick(project.id)}
           >
             {/* Project Name and Progress Only */}
-            <div className="text-left">
-              <h3 className="font-medium text-gray-900 mb-3 truncate">{project.name}</h3>
-              
-              {/* Progress Bar */}
-              <div className="mb-2">
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>Progress</span>
-                  <span>{project.progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${project.progress}%`, backgroundColor: '#8c52ff' }}
-                  />
+            <div className="text-left h-full flex flex-col justify-between">
+              <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium text-gray-900 truncate">{project.name}</h3>
+                <span className="text-sm text-gray-500 ml-2 whitespace-nowrap">{project.lastUpdated}</span>
+              </div>
+                
+                {/* Progress Bar */}
+                <div className="mb-3">
+                  <div className="flex justify-between text text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span>{project.progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="h-3 rounded-full transition-all duration-300" 
+                      style={{ width: `${project.progress}%`, backgroundColor: '#8c52ff' }}
+                    />
+                  </div>
                 </div>
               </div>
+              
+              {/* Last Updated Time */}
+              
             </div>
           </div>
         ))}

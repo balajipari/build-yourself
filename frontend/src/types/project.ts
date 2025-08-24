@@ -6,8 +6,8 @@ export interface Project {
   project_type: string;
   status: ProjectStatus;
   configuration?: Record<string, any>;
-  image_base64?: string;  // Generated image as base64 string
-  conversation_history?: ConversationMessage[];  // Chat conversation history
+  image_base64?: string;
+  conversation_history?: ConversationMessage[];
   created_at: string;
   updated_at: string;
 }
@@ -76,4 +76,16 @@ export interface ProjectStats {
 
 export interface ProjectCategories {
   categories: string[];
+}
+
+export interface ProjectSearch {
+  /** Simplified project data for search results */
+  id: string;
+  name: string;
+  description?: string;
+  project_type: string;
+  status: ProjectStatus;
+  image_base64?: string;
+  completion_timestamp?: string;
+  progress?: number;
 }

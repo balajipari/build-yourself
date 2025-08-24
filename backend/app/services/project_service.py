@@ -9,7 +9,7 @@ from uuid import UUID
 import json
 
 from ..models import Project, User, UserFavorite, ProjectStatus
-from ..schemas import ProjectCreate, ProjectCreateSimple, ProjectUpdate, ProjectSearchParams, PaginatedResponse
+from ..schemas import ProjectCreate, ProjectCreateSimple, ProjectUpdate, ProjectSearchParams, PaginatedResponse, ProjectSearchResponse
 
 
 class ProjectService:
@@ -131,7 +131,7 @@ class ProjectService:
         self, 
         user_id: UUID, 
         search_params: ProjectSearchParams
-    ) -> PaginatedResponse:
+    ) -> PaginatedResponse[ProjectSearchResponse]:
         """Get paginated projects for a user with search and filters"""
         try:
             # Base query
@@ -196,8 +196,7 @@ class ProjectService:
             total_pages = (total + search_params.page_size - 1) // search_params.page_size
             
             # Convert SQLAlchemy models to Pydantic schemas
-            from ..schemas import ProjectResponse
-            project_schemas = [ProjectResponse.model_validate(project) for project in projects]
+            project_schemas = [ProjectSearchResponse.model_validate(project) for project in projects]
             
             return PaginatedResponse(
                 items=project_schemas,
