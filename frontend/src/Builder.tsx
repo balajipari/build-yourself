@@ -35,6 +35,7 @@ const Builder: React.FC = () => {
   const [showBackToDashboardModal, setShowBackToDashboardModal] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [projectTitle, setProjectTitle] = useState<string>('');
 
   const isNewBuildSession = location.state?.type;
   const projectId = location.state?.projectId || new URLSearchParams(location.search).get('projectId');
@@ -61,6 +62,7 @@ const Builder: React.FC = () => {
   const loadProjectData = useCallback(async (projectId: string) => {
     try {
       const project = await projectService.getProject(projectId);
+      setProjectTitle(project.name);
       
       if (project.conversation_history && project.conversation_history.length > 0) {
         const messages = project.conversation_history
@@ -162,6 +164,18 @@ const Builder: React.FC = () => {
   const handleOptionSelect = useCallback((optionText: string) => {
     sendMessage(optionText);
   }, [sendMessage]);
+
+  const handleTitleUpdate = useCallback(async (newTitle: string) => {
+    if (projectId) {
+      try {
+        await projectService.updateProject(projectId, { name: newTitle });
+        setProjectTitle(newTitle);
+      } catch (error) {
+        console.error('Failed to update project title:', error);
+        alert('Failed to update project title. Please try again.');
+      }
+    }
+  }, [projectId]);
 
   const handleCustomSubmit = useCallback(() => {
     if (customInput.trim()) {
@@ -292,6 +306,8 @@ const Builder: React.FC = () => {
               onCustomSubmit={handleCustomSubmit}
               imageBase64={imageBase64}
               onDownload={downloadImage}
+              projectTitle={projectTitle}
+              onTitleUpdate={handleTitleUpdate}
             />
           </div>
         </div>
