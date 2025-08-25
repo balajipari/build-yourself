@@ -84,69 +84,51 @@ class UserResponse(UserBase):
 
 
 class ProjectSearchResponse(BaseModel):
-    """Simplified project response for search results - only essential fields"""
     id: UUID
     name: str
     description: Optional[str]
     project_type: str
     status: str
-    image_base64: Optional[str] = None  # Generated image as base64 string
+    image_base64: Optional[str] = None
     completion_timestamp: Optional[datetime] = None
-    progress: Optional[int] = None  # Progress for draft projects (0-100)
+    progress: Optional[int] = None
+    is_favorite: bool = False
     
     class Config:
         from_attributes = True
     
     @classmethod
     def model_validate(cls, obj):
-        """Custom validation to handle enum conversion and calculate progress"""
-        # Convert enum to string value if needed
-        if hasattr(obj, 'status') and hasattr(obj.status, 'value'):
-            obj.status = obj.status.value
-        if hasattr(obj, 'project_type') and hasattr(obj.project_type, 'value'):
-            obj.project_type = obj.project_type.value
+        status = getattr(obj, 'status', None)
+        status = status.value if hasattr(status, 'value') else status
         
-        # Get image_base64 from the object
-        image_base64 = getattr(obj, 'image_base64', None)
+        project_type = getattr(obj, 'project_type', None)
+        project_type = project_type.value if hasattr(project_type, 'value') else project_type
         
-        # Calculate completion timestamp from configuration if available
-        completion_timestamp = None
-        if hasattr(obj, 'configuration') and obj.configuration:
-            if isinstance(obj.configuration, dict):
-                completion_timestamp = obj.configuration.get('completion_timestamp')
+        configuration = getattr(obj, 'configuration', {}) or {}
+        completion_timestamp = configuration.get('completion_timestamp')
         
-        # Calculate progress for draft projects
         progress = None
-        if hasattr(obj, 'status') and obj.status == 'DRAFT':
-            if hasattr(obj, 'conversation_history') and obj.conversation_history:
-                # Progress = (conversation length / total expected questions) * 100
-                # Assuming 15 is the base number of questions, plus any custom questions
-                conversation_length = len(obj.conversation_history)
-                total_questions = 15  # Base questions
-                
-                # If we have custom fields in configuration, add them to total
-                if hasattr(obj, 'configuration') and obj.configuration:
-                    if isinstance(obj.configuration, dict):
-                        custom_fields = obj.configuration.get('bike_specification', {}).get('custom_fields', {})
-                        if custom_fields:
-                            total_questions += len(custom_fields)
-                
-                # Calculate percentage: (completed / total) * 100
-                progress = min(100, int((conversation_length / total_questions) * 100))
+        if status == 'DRAFT':
+            conversation_history = getattr(obj, 'conversation_history', []) or []
+            if conversation_history:
+                total_questions = 15
+                if isinstance(configuration, dict):
+                    custom_fields = configuration.get('bike_specification', {}).get('custom_fields', {})
+                    total_questions += len(custom_fields) if custom_fields else 0
+                progress = min(100, int((len(conversation_history) / total_questions) * 100))
         
-        # Create a new object with calculated fields
-        obj_dict = {
-            'id': obj.id,
-            'name': obj.name,
-            'description': obj.description,
-            'project_type': obj.project_type,
-            'status': obj.status,
-            'image_base64': image_base64,
+        return super().model_validate({
+            'id': getattr(obj, 'id', None),
+            'name': getattr(obj, 'name', None),
+            'description': getattr(obj, 'description', None),
+            'project_type': project_type,
+            'status': status,
+            'image_base64': getattr(obj, 'image_base64', None),
+            'is_favorite': getattr(obj, 'is_favorite', False),
             'completion_timestamp': completion_timestamp,
             'progress': progress
-        }
-        
-        return super().model_validate(obj_dict)
+        })
 
 
 class ProjectResponse(ProjectBase):
@@ -219,7 +201,8 @@ class FavoriteToggle(BaseModel):
 class FavoriteResponse(BaseModel):
     project_id: UUID
     is_favorite: bool
-    created_at: datetime
+    created_at: Optional[datetime] = None
+    message: Optional[str] = None
     
     class Config:
         from_attributes = True

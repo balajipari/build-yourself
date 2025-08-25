@@ -159,13 +159,16 @@ class ProjectService {
     }
   }
 
-  async deleteProject(projectId: string): Promise<void> {
+  async deleteProject(projectId: string, softDelete: boolean = true): Promise<void> {
     try {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_ENDPOINTS.PROJECTS.DELETE.replace('{id}', projectId)}`,
         {
           method: 'DELETE',
-          headers: this.getAuthHeaders(),
+          headers: {
+            ...this.getAuthHeaders(),
+            'X-Soft-Delete': softDelete.toString()
+          },
         }
       );
 
@@ -195,6 +198,53 @@ class ProjectService {
       return await response.json();
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      throw error;
+    }
+  }
+
+  async downloadImage(projectId: string): Promise<void> {
+    try {
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_ENDPOINTS.IMAGE_DOWNLOAD}/project/${projectId}`,
+        {
+          method: 'GET',
+          headers: this.getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Image not found. The project may have been deleted.');
+        }
+        if (response.status === 500) {
+          throw new Error('Project image data is missing or corrupted.');
+        }
+        throw new Error(`Failed to download image: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const base64Data = data.image_base64;
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bike-${projectId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading image:', error);
       throw error;
     }
   }

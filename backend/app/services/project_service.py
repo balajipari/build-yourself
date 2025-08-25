@@ -127,83 +127,53 @@ class ProjectService:
             )
         ).first()
     
-    def get_user_projects(
-        self, 
-        user_id: UUID, 
-        search_params: ProjectSearchParams
-    ) -> PaginatedResponse[ProjectSearchResponse]:
-        """Get paginated projects for a user with search and filters"""
+    def get_user_projects(self, user_id: UUID, search_params: ProjectSearchParams) -> PaginatedResponse[ProjectSearchResponse]:
         try:
-            # Base query
-            query = self.db.query(Project).filter(Project.user_id == user_id)
-            
-            # Apply search filter
+            query = self.db.query(Project, UserFavorite.id.isnot(None).label('is_favorite')).outerjoin(
+                UserFavorite, and_(UserFavorite.project_id == Project.id, UserFavorite.user_id == user_id)
+            ).filter(
+                Project.user_id == user_id,
+                Project.status != ProjectStatus.ARCHIVED
+            )
+
             if search_params.search_key:
                 search_term = f"%{search_params.search_key}%"
-                query = query.filter(
-                    or_(
-                        Project.name.ilike(search_term),
-                        Project.description.ilike(search_term)
-                    )
-                )
-            
-            # Apply category filter
+                query = query.filter(or_(Project.name.ilike(search_term), Project.description.ilike(search_term)))
+
             if search_params.category:
                 query = query.filter(Project.project_type == search_params.category)
-            
-            # Apply status filter
+
             if search_params.status:
                 query = query.filter(Project.status == search_params.status)
-            
-            # Apply favorite filter
+
             if search_params.is_favorite is not None:
-                if search_params.is_favorite:
-                    # Get projects that are favorited by the user
-                    favorited_projects = self.db.query(UserFavorite.project_id).filter(
-                        UserFavorite.user_id == user_id
-                    ).subquery()
-                    query = query.filter(Project.id.in_(favorited_projects))
-                else:
-                    # Get projects that are NOT favorited by the user
-                    favorited_projects = self.db.query(UserFavorite.project_id).filter(
-                        UserFavorite.user_id == user_id
-                    ).subquery()
-                    query = query.filter(~Project.id.in_(favorited_projects))
-            
-            # Get total count before pagination
+                favorited_projects = self.db.query(UserFavorite.project_id).filter(UserFavorite.user_id == user_id).subquery()
+                query = query.filter(Project.id.in_(favorited_projects) if search_params.is_favorite else ~Project.id.in_(favorited_projects))
+
             total = query.count()
-            
-            # Apply sorting
-            if search_params.sort_by == "name":
-                sort_field = Project.name
-            elif search_params.sort_by == "updated_at":
-                sort_field = Project.updated_at
-            elif search_params.sort_by == "status":
-                sort_field = Project.status
-            else:  # default to created_at
-                sort_field = Project.created_at
-            
-            if search_params.sort_order == "asc":
-                query = query.order_by(asc(sort_field))
-            else:
-                query = query.order_by(desc(sort_field))
-            
-            # Apply pagination
+
+            sort_field = {
+                "name": Project.name,
+                "updated_at": Project.updated_at,
+                "status": Project.status
+            }.get(search_params.sort_by, Project.created_at)
+
+            query = query.order_by(asc(sort_field) if search_params.sort_order == "asc" else desc(sort_field))
+
             offset = (search_params.page - 1) * search_params.page_size
-            projects = query.offset(offset).limit(search_params.page_size).all()
-            
-            # Calculate total pages
-            total_pages = (total + search_params.page_size - 1) // search_params.page_size
-            
-            # Convert SQLAlchemy models to Pydantic schemas
-            project_schemas = [ProjectSearchResponse.model_validate(project) for project in projects]
-            
+            results = query.offset(offset).limit(search_params.page_size).all()
+
+            project_schemas = [
+                ProjectSearchResponse.model_validate(project).copy(update={'is_favorite': bool(is_favorite)})
+                for project, is_favorite in results
+            ]
+
             return PaginatedResponse(
                 items=project_schemas,
                 total=total,
                 page=search_params.page,
                 page_size=search_params.page_size,
-                total_pages=total_pages
+                total_pages=(total + search_params.page_size - 1) // search_params.page_size
             )
             
         except Exception as e:
@@ -234,15 +204,19 @@ class ProjectService:
             self.db.rollback()
             raise Exception(f"Failed to update project: {str(e)}")
     
-    def delete_project(self, project_id: UUID, user_id: UUID) -> bool:
-        """Delete a project"""
+    def delete_project(self, project_id: UUID, user_id: UUID, soft_delete: bool = True) -> bool:
+        """Delete a project. By default, performs soft deletion by setting status to ARCHIVED."""
         try:
             project = self.get_project_by_id(project_id, user_id)
             if not project:
                 return False
             
-            self.db.delete(project)
-            self.db.commit()
+            if soft_delete:
+                project.status = ProjectStatus.ARCHIVED
+                self.db.commit()
+            else:
+                self.db.delete(project)
+                self.db.commit()
             
             return True
         except Exception as e:
@@ -267,8 +241,11 @@ class ProjectService:
             
             if existing_favorite:
                 # Remove from favorites
+                created_at = existing_favorite.created_at  # Store before deletion
                 self.db.delete(existing_favorite)
                 is_favorite = False
+                message = "Project removed from favorites"
+                created_at = None
             else:
                 # Add to favorites
                 new_favorite = UserFavorite(
@@ -276,14 +253,18 @@ class ProjectService:
                     project_id=project_id
                 )
                 self.db.add(new_favorite)
+                self.db.flush()  # Flush to get the created_at value
                 is_favorite = True
+                message = "Project added to favorites"
+                created_at = new_favorite.created_at
             
             self.db.commit()
             
             return {
                 "project_id": project_id,
                 "is_favorite": is_favorite,
-                "message": "Added to favorites" if is_favorite else "Removed from favorites"
+                "message": message,
+                "created_at": created_at
             }
             
         except Exception as e:

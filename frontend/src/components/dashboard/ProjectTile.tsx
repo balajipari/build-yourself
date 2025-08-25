@@ -3,6 +3,7 @@ import { FaHeart, FaRegHeart, FaEllipsisH } from 'react-icons/fa';
 import { RiDownloadLine } from "react-icons/ri";
 import { TbTrash } from "react-icons/tb";
 import type { Project } from './types';
+import { DEFAULT_IMAGES } from '../../config/constants';
 
 interface ProjectTileProps {
   project: Project;
@@ -20,6 +21,7 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
   onDelete,
 }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -51,9 +53,10 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
       {/* Project Image with Heart Icon */}
       <div className="relative h-64 bg-gray-100">
         <img 
-          src={project.image} 
+          src={!project.image || imageError ? DEFAULT_IMAGES.BIKE_GRAFFITI : project.image} 
           alt={project.name}
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
         
         {/* Heart Icon - Top Left */}

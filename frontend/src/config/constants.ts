@@ -33,6 +33,10 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
+export const DEFAULT_IMAGES = {
+  BIKE_GRAFFITI: 'https://placehold.co/600x400/e2e8f0/475569?text=My+Dream+Bike',
+} as const;
+
 export const FRONTEND_URLS = {
   BASE_URL: 'http://localhost:5173',
   DASHBOARD: 'http://localhost:5173/dashboard',

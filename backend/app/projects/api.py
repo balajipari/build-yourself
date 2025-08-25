@@ -2,7 +2,7 @@
 Project API router for project management endpoints
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
 from sqlalchemy.orm import Session
 from typing import Optional
 from uuid import UUID
@@ -289,9 +289,10 @@ async def update_conversation_history(
 async def delete_project(
     project_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user_jwt)
+    current_user: dict = Depends(get_current_user_jwt),
+    x_soft_delete: bool = Header(True, description="Whether to perform soft deletion")
 ):
-    """Delete a project"""
+    """Delete a project. By default uses soft deletion by setting status to ARCHIVED."""
     try:
         user_service = UserService(db)
         user = user_service.get_user_by_id(UUID(current_user["id"]))
@@ -304,7 +305,8 @@ async def delete_project(
         project_service = ProjectService(db)
         success = project_service.delete_project(
             project_id=project_id,
-            user_id=user.id
+            user_id=user.id,
+            soft_delete=x_soft_delete
         )
         
         if not success:

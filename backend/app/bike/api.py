@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi.responses import FileResponse, JSONResponse
 from .prompt import SYSTEM_PROMPT
 from .structured_prompt import STRUCTURED_SYSTEM_PROMPT
 from .models import (
@@ -14,6 +14,7 @@ from .utils import (
     validate_custom_message_for_image_generation
 )
 import os
+import base64
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
@@ -220,9 +221,9 @@ def chat_complete(request: ChatSessionRequest):
             
             # Return a fallback response instead of crashing
             return ChatResponse(
-                type="error",
-                content="I'm having trouble processing your request. Please try again.",
-                message=readable_content or "Please try again with a different approach."
+                ai_message=readable_content or "I'm having trouble processing your request. Please try again.",
+                is_complete=False,
+                options=[]
             )
         
         messages.append({"role": "assistant", "content": ai_message})
@@ -351,3 +352,27 @@ def download_image(session_id: str):
         filename=f"custom_bike_{session_id}.png",
         media_type="image/png"
     )
+
+@router.get("/image/download/project/{project_id}")
+def download_project_image(project_id: UUID, db: Session = Depends(get_db)):
+    try:
+        # Get project from database
+        project = db.query(Project).filter(Project.id == project_id).first()
+        
+        # Check if project exists and has image data
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found.")
+            
+        if not project.image_base64:
+            raise HTTPException(status_code=500, detail="Project image data is missing or corrupted.")
+        
+        # Return the base64 image data
+        return {
+            "image_base64": project.image_base64,
+            "project_id": str(project_id)
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

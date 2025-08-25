@@ -21,16 +21,16 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   if (!questionText || isComplete) return null;
 
   return (
-    <div className={`p-4 bg-white rounded-lg border border-gray-300 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b border-gray-100 pb-2 mb-4">{questionText}</h3>
+    <div className={`${className}`}>
+      <h3 className="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-3">{questionText}</h3>
       
       {options.length > 0 ? (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {options.map((opt) => (
             <button
-              key={opt.id}
+              key={opt.number}
               onClick={() => onOptionSelect(opt.text)}
-              className="w-fit p-1 px-2.5 text-left bg-blue-50 border border-blue-100 rounded-xl hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer"
+              className="w-full p-3 text-left bg-blue-50 border border-blue-100 rounded-xl hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer"
             >
               <span className="text-gray-700 font-medium">{opt.text}</span>
             </button>

@@ -41,9 +41,11 @@ const DashboardContent: React.FC = () => {
       });
       setApiProjects(response.items);
       
-      // Extract favorite project IDs (assuming favorites are stored in a separate table)
-      // For now, we'll use an empty array and handle favorites through the API
-      setFavorites([]);
+      // Set favorites based on the is_favorite flag from the API response
+      const favoriteIds = response.items
+        .filter(project => project.is_favorite)
+        .map(project => project.id);
+      setFavorites(favoriteIds);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     } finally {
@@ -69,17 +71,30 @@ const DashboardContent: React.FC = () => {
 
   const handleFavoriteToggle = async (projectId: string) => {
     try {
-      await projectService.toggleFavorite(projectId);
-      // Refresh projects to show updated favorite status
-      fetchProjects();
+      const response = await projectService.toggleFavorite(projectId);
+      // Update favorites state locally
+      setFavorites(prevFavorites => {
+        if (response.is_favorite) {
+          return [...prevFavorites, projectId];
+        } else {
+          return prevFavorites.filter(id => id !== projectId);
+        }
+      });
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+      // Refresh projects to ensure we have the latest state
+      fetchProjects();
+      alert('Failed to update favorite status. The project may have been deleted or you may not have permission.');
     }
   };
 
-  const handleDownload = (projectId: string) => {
-    // TODO: Implement download functionality
-    console.log('Download project:', projectId);
+  const handleDownload = async (projectId: string) => {
+    try {
+      await projectService.downloadImage(projectId);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+      alert('Failed to download image. Please try again.');
+    }
   };
 
   const handleDelete = async (projectId: string) => {
@@ -132,7 +147,7 @@ const DashboardContent: React.FC = () => {
     .map(mapToInProgressProject);
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-8 py-8 w-[80%] mx-auto">
       {/* Header with Create Button */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
