@@ -10,7 +10,7 @@ interface SubHeaderProps {
 
 const SubHeader: React.FC<SubHeaderProps> = ({ onBackToDashboard, onStartOver, currentStep, totalSteps }) => {
   return (
-    <div className="sticky top-20 z-10">
+    <div className="sticky top-15 z-10">
       <div className="max-w-7xl mx-auto my-2">
         <div className="flex items-center justify-between">
           {/* Left side - Back to Dashboard button */}
@@ -25,7 +25,7 @@ const SubHeader: React.FC<SubHeaderProps> = ({ onBackToDashboard, onStartOver, c
           </button>
 
           {/* Center - Progress Bar */}
-          <div className="flex-1 max-w-xl mx-8">
+          <div className="flex-1 max-w-xl mx-8 mt-5">
             <ProgressBar 
               currentStep={currentStep} 
               totalSteps={totalSteps} 

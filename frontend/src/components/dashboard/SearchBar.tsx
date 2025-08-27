@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import { debounce } from 'lodash';
 
-const SearchBar: React.FC = () => {
+interface SearchBarProps {
+  onSearch: (searchTerm: string) => void;
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      onSearch(term);
+    }, 300),
+    [onSearch]
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value);
+  };
+
   return (
     <div className="relative">
       <input
         type="text"
+        value={searchTerm}
+        onChange={handleSearch}
         placeholder="Search projects..."
         className="pl-9 pr-4 py-1.5 border rounded-md border-gray-300 focus:outline-none focus:border-[#8c52ff] bg-transparent"
       />

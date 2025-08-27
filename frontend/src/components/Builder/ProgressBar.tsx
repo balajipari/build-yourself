@@ -13,8 +13,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   const progressPercentage = currentStep > 0 ? Math.round((currentStep / totalSteps) * 100) : 0;
 
-  if (currentStep === 0) return null;
-
   return (
     <div className={`mb-10 ${className}`}>
       <div className="flex justify-between text-sm text-gray-600 mt-6 mb-2">

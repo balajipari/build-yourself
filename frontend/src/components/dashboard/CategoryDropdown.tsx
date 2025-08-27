@@ -32,8 +32,8 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   const getDisplayText = (category: string) => {
     switch (category) {
       case 'all': return 'All';
-      case 'bikes': return 'Bikes';
-      case 'cars': return 'Cars';
+      case 'bike': return 'Bikes';
+      case 'car': return 'Cars';
       default: return 'All';
     }
   };
@@ -59,17 +59,17 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             All
           </button>
           <button
-            onClick={() => handleCategorySelect('bikes')}
+            onClick={() => handleCategorySelect('bike')}
             className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 cursor-pointer ${
-              selectedCategory === 'bikes' ? 'text-[#8c52ff] bg-[#8c52ff]/10' : 'text-gray-700'
+              selectedCategory === 'bike' ? 'text-[#8c52ff] bg-[#8c52ff]/10' : 'text-gray-700'
             }`}
           >
             Bikes
           </button>
           <button
-            onClick={() => handleCategorySelect('cars')}
+            onClick={() => handleCategorySelect('car')}
             className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 cursor-pointer ${
-              selectedCategory === 'cars' ? 'text-[#8c52ff] bg-[#8c52ff]/10' : 'text-gray-700'
+              selectedCategory === 'car' ? 'text-[#8c52ff] bg-[#8c52ff]/10' : 'text-gray-700'
             }`}
           >
             Cars

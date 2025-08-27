@@ -88,4 +88,5 @@ export interface ProjectSearch {
   image_base64?: string;
   completion_timestamp?: string;
   progress?: number;
+  is_favorite?: boolean;
 }

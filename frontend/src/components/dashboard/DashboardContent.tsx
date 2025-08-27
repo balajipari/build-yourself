@@ -1,41 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import CreateNewButton from './CreateNewButton';
-
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { projectService } from '../../services/project';
-import type { ProjectSearch, ProjectCreateSimple } from '../../types/project';
-import type { Project as DashboardProject, InProgressProject } from './types';
+import type { ProjectSearch } from '../../types/project';
 import FilterActions from './FilterActions';
 import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
-import { formatReadableTime } from '../../utils/time';
+import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
 
 const DashboardContent: React.FC = () => {
-  // Existing state for filters
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('created_at');
+  const [sortBy, setSortBy] = useState('date-desc');
   const [showFavorites, setShowFavorites] = useState(false);
-  
-  // New state for projects and API integration
-
+  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [apiProjects, setApiProjects] = useState<ProjectSearch[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // Fetch projects on component mount
   useEffect(() => {
     fetchProjects();
-  }, [selectedCategory, sortBy, showFavorites]);
+  }, [selectedCategory, sortBy, showFavorites, searchTerm]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setIsLoading(true);
+      const [sortField, sortDirection] = sortBy.split('-');
+      const sortByField = sortField === 'date' ? 'created_at' : 'name';
+      const sortOrder = sortDirection as 'asc' | 'desc';
+      
       const response = await projectService.getProjects({
-        search_key: '',
+        search_key: searchTerm,
         category: selectedCategory === 'all' ? '' : selectedCategory,
         status: undefined,
         is_favorite: showFavorites ? true : undefined,
-        sort_by: sortBy as any,
-        sort_order: 'desc',
+        sort_by: sortByField,
+        sort_order: sortOrder,
         page: 1,
         page_size: 50,
       });
@@ -51,25 +48,10 @@ const DashboardContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [sortBy, searchTerm, selectedCategory, showFavorites]);
 
-  const handleCreateProject = async (category: string) => {
-    try {
-      setIsLoading(true);
-      const projectData: ProjectCreateSimple = { project_type: category };
-      await projectService.createProject(projectData);
-      
-      // Refresh projects to show the new one
-      fetchProjects();
-    } catch (error) {
-      console.error('Failed to create project:', error);
-      alert('Failed to create project. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleFavoriteToggle = async (projectId: string) => {
+  const handleFavoriteToggle = useCallback(async (projectId: string) => {
     try {
       const response = await projectService.toggleFavorite(projectId);
       // Update favorites state locally
@@ -86,18 +68,18 @@ const DashboardContent: React.FC = () => {
       fetchProjects();
       alert('Failed to update favorite status. The project may have been deleted or you may not have permission.');
     }
-  };
+  }, [fetchProjects]);
 
-  const handleDownload = async (projectId: string) => {
+  const handleDownload = useCallback(async (projectId: string) => {
     try {
       await projectService.downloadImage(projectId);
     } catch (error) {
       console.error('Failed to download image:', error);
       alert('Failed to download image. Please try again.');
     }
-  };
+  }, []);
 
-  const handleDelete = async (projectId: string) => {
+  const handleDelete = useCallback(async (projectId: string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
         await projectService.deleteProject(projectId);
@@ -108,55 +90,28 @@ const DashboardContent: React.FC = () => {
         alert('Failed to delete project. Please not found');
       }
     }
-  };
+  }, [fetchProjects]);
 
-  // Map API projects to dashboard project format
-  const mapToDashboardProject = (apiProject: ProjectSearch): DashboardProject => ({
-    id: apiProject.id,
-    name: apiProject.name,
-    status: apiProject.status,
-    progress: apiProject.status === 'COMPLETED' ? 100 : 
-              apiProject.status === 'IN_PROGRESS' ? 50 : 0,
-    lastUpdated: apiProject.completion_timestamp ? formatReadableTime(apiProject.completion_timestamp) : 'recently',
-    image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
-    category: apiProject.project_type,
-  });
+  // Filter and transform projects
+  const { filteredProjects, draftProjects } = useMemo(() => {
+    const filtered = apiProjects
+      .filter(project => {
+        if (showFavorites && !favorites.includes(project.id)) return false;
+        if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
+        if (project.status === 'DRAFT') return false;
+        return true;
+      })
+      .map(mapToDashboardProject);
 
-  const mapToInProgressProject = (apiProject: ProjectSearch): InProgressProject => ({
-    id: apiProject.id,
-    name: apiProject.name,
-    status: apiProject.status,
-    progress: apiProject.progress || 0, // Use progress from API for draft projects
-    lastUpdated: apiProject.completion_timestamp ? formatReadableTime(apiProject.completion_timestamp) : 'recently',
-    image: apiProject.image_base64 ? `data:image/png;base64,${apiProject.image_base64}` : '',
-  });
+    const drafts = apiProjects
+      .filter(project => project.status === 'DRAFT')
+      .map(mapToInProgressProject);
 
-  // Filter projects based on current state (exclude draft projects)
-  const filteredProjects = apiProjects
-    .filter(project => {
-      if (showFavorites && !favorites.includes(project.id)) return false;
-      if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
-      if (project.status === 'DRAFT') return false; // Exclude draft projects from main list
-      return true;
-    })
-    .map(mapToDashboardProject);
-
-  // Get draft projects (projects with status 'DRAFT')
-  const draftProjects = apiProjects
-    .filter(project => project.status === 'DRAFT')
-    .map(mapToInProgressProject);
+    return { filteredProjects: filtered, draftProjects: drafts };
+  }, [apiProjects, showFavorites, favorites, selectedCategory]);
 
   return (
-    <div className="px-8 py-8 w-[80%] mx-auto">
-      {/* Header with Create Button */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-2xl font-semibold text-gray-900">My Projects</p>
-          </div>
-          <CreateNewButton onProjectCreated={fetchProjects} />
-        </div>
-      </div>
+    <div className="mt-10 px-8 py-8 w-[80%] mx-auto">
 
       {/* Filter Actions */}
       <FilterActions
@@ -166,6 +121,8 @@ const DashboardContent: React.FC = () => {
         onCategoryChange={setSelectedCategory}
         onSortChange={setSortBy}
         onFavoritesToggle={() => setShowFavorites(!showFavorites)}
+        onProjectCreated={fetchProjects}
+        onSearch={setSearchTerm}
       />
 
       {/* Continue Working On */}
