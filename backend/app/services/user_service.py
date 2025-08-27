@@ -9,6 +9,7 @@ from uuid import UUID
 import json
 
 from ..models import User, UserStatus
+from .project_quota_service import ProjectQuotaService
 from ..schemas import UserCreate, UserUpdate, UserResponse
 
 
@@ -28,7 +29,12 @@ class UserService:
     
     def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Get user by ID"""
-        return self.db.query(User).filter(User.id == user_id).first()
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if user:
+            # Load project quota
+            quota_service = ProjectQuotaService(self.db)
+            quota_service.get_user_quota(user_id)  # This will create if not exists
+        return user
     
     def create_user(self, user_data: UserCreate) -> User:
         """Create a new user"""

@@ -212,3 +212,23 @@ class FavoriteResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
     error_code: Optional[str] = None
+
+
+# Project Quota schemas
+class ProjectQuotaBase(BaseModel):
+    completed_projects_count: int
+    free_projects_remaining: int
+
+
+class ProjectQuotaCreate(ProjectQuotaBase):
+    user_id: UUID
+
+
+class ProjectQuotaResponse(ProjectQuotaBase):
+    id: UUID
+    user_id: UUID
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

@@ -25,6 +25,8 @@ def ping():
 
 
 
+from ..schemas import ProjectQuotaResponse
+
 class UserResponse(BaseModel):
     id: str
     email: str
@@ -32,6 +34,7 @@ class UserResponse(BaseModel):
     picture: Optional[str]
     is_gsuite: bool
     domain: Optional[str]
+    project_quota: Optional[ProjectQuotaResponse] = None
 
 class AuthResponse(BaseModel):
     access_token: str
@@ -183,33 +186,72 @@ async def complete_google_auth(code: str, db: Session = Depends(get_db)):
         )
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
     """Get current user information from JWT token"""
     try:
         payload = verify_jwt_token(credentials.credentials)
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
         
+        # Get user with project quota
+        from ..services.user_service import UserService
+        user_service = UserService(db)
+        user = user_service.get_user_by_id(payload["sub"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
         return UserResponse(
-            id=payload["sub"],
-            email=payload["email"],
-            name=payload["name"],
-            picture=payload.get("picture"),
-            is_gsuite=payload.get("is_gsuite", False),
-            domain=payload.get("domain")
+            id=str(user.id),
+            email=user.email,
+            name=user.full_name,
+            picture=user.avatar_url,
+            is_gsuite=bool(user.google_id),
+            domain=payload.get("domain"),
+            project_quota=user.project_quota
         )
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 @router.post("/refresh")
-async def refresh_token(request: RefreshTokenRequest):
+async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
     """Refresh access token using refresh token"""
     try:
+        # First refresh the Google OAuth token
         result = await refresh_access_token(request.refresh_token)
         if not result:
             raise HTTPException(status_code=400, detail="Failed to refresh token")
-        return result
+
+        # Get user info with new access token
+        credentials = Credentials(
+            token=result['access_token'],
+            refresh_token=request.refresh_token,
+            client_id=os.getenv("GOOGLE_CLIENT_ID"),
+            client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+            token_uri="https://oauth2.googleapis.com/token"
+        )
+        user_info = await get_user_info(credentials)
+        
+        # Get or create user in database
+        user_data = await create_or_get_user_from_google(user_info, db)
+        
+        # Generate new JWT token
+        jwt_token = generate_jwt_token_for_user(user_data)
+        
+        return {
+            "success": True,
+            "data": {
+                "jwt_token": jwt_token,
+                "access_token": result['access_token'],
+                "refresh_token": request.refresh_token,  # Keep the same refresh token
+                "user": user_data,
+                "expires_in": 604800  # 7 days in seconds
+            }
+        }
     except Exception as e:
+        print(f"Token refresh failed: {e}")
         raise HTTPException(status_code=400, detail=f"Token refresh failed: {str(e)}")
 
 @router.post("/validate")

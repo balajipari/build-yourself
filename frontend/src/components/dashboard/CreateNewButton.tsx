@@ -8,9 +8,10 @@ import type { ProjectCreateSimple } from '../../types/project';
 
 interface CreateNewButtonProps {
   onProjectCreated?: () => void;
+  freeProjectsRemaining: number;
 }
 
-const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated }) => {
+const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, freeProjectsRemaining }) => {
   const [openCreateDropdown, setOpenCreateDropdown] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const createDropdownRef = useRef<HTMLDivElement>(null);
@@ -60,16 +61,31 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated }) =
 
   return (
     <div className="relative" ref={createDropdownRef}>
-      <button
-        onClick={() => setOpenCreateDropdown(!openCreateDropdown)}
-        disabled={isCreating}
-        className="flex items-center gap-2 bg-gradient-to-r from-[#8c52ff] to-[#a855f7] text-white px-3 py-2 rounded-lg hover:from-[#8c52ff]/90 hover:to-[#a855f7]/90 transition-all duration-200 font-medium shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <BsStars className="w-5 h-5" />
-        <span className="font-semibold">
-          {isCreating ? 'Creating...' : "Let's Build"}
-        </span>
-      </button>
+      {freeProjectsRemaining > 0 ? (
+        <div className="flex items-center gap-3">
+          <div className="text-orange-500 font-medium">
+            {freeProjectsRemaining} free projects left
+          </div>
+        <button
+          onClick={() => setOpenCreateDropdown(!openCreateDropdown)}
+          disabled={isCreating}
+          className="flex items-center gap-2 bg-gradient-to-r from-[#8c52ff] to-[#a855f7] text-white px-3 py-2 rounded-lg hover:from-[#8c52ff]/90 hover:to-[#a855f7]/90 transition-all duration-200 font-medium shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <BsStars className="w-5 h-5" />
+          <span className="font-semibold">
+            {isCreating ? 'Creating...' : "Let's Build"}
+          </span>
+        </button>
+        </div>
+      ) : (
+          <button
+            onClick={() => window.open('mailto:support@buildyourself.com?subject=Request%20More%20Projects')}
+            className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg cursor-pointer"
+          >
+            <BsStars className="w-5 h-5" />
+            <span className="font-semibold">Recharge credits</span>
+          </button>
+      )}
 
       {openCreateDropdown && (
         <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-32 z-10">

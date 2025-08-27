@@ -4,6 +4,7 @@ import CategoryDropdown from './CategoryDropdown';
 import SortDropdown from './SortDropdown';
 import FavoritesToggle from './FavoritesToggle';
 import CreateNewButton from './CreateNewButton';
+import { useAuth } from '../../context/AuthContext';
 
 interface FilterActionsProps {
   selectedCategory: string;
@@ -26,6 +27,8 @@ const FilterActions: React.FC<FilterActionsProps> = ({
   onProjectCreated,
   onSearch,
 }) => {
+  const { user } = useAuth();
+  const freeProjectsRemaining = user?.project_quota?.free_projects_remaining ?? 0;
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center space-x-4">
@@ -45,7 +48,11 @@ const FilterActions: React.FC<FilterActionsProps> = ({
       </div>
 
       <div className="flex items-center space-x-4">
-      <CreateNewButton onProjectCreated={onProjectCreated} />
+      <CreateNewButton 
+        onProjectCreated={onProjectCreated} 
+
+        freeProjectsRemaining={freeProjectsRemaining}
+      />
       </div>
     </div>
   );

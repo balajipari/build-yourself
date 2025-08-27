@@ -57,15 +57,44 @@ class AuthService {
         },
       });
 
-      if (!response.ok) {
+      if (response.status === 401) {
+        // Token is invalid or expired, try to refresh
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry with new token
+          const newToken = this.getJWTToken();
+          const retryResponse = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.ME}`, {
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+            },
+          });
+          
+          if (retryResponse.ok) {
+            const user: User = await retryResponse.json();
+            return user;
+          }
+        }
+        // If refresh failed or retry failed, clear tokens
         this.clearTokens();
         return null;
       }
 
+      if (!response.ok) {
+        console.error('Error getting current user:', response.status, response.statusText);
+        if (response.status === 404) {
+          // User not found, clear tokens
+          this.clearTokens();
+        }
+        return null;
+      }
+
       const user: User = await response.json();
+      // Update stored user info to keep it in sync
+      localStorage.setItem('user_info', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('Error getting current user:', error);
+      // Only clear tokens on network/parsing errors
       this.clearTokens();
       return null;
     }
@@ -126,8 +155,8 @@ class AuthService {
 
   private storeTokens(authData: AuthResponse): void {
     localStorage.setItem('jwt_token', authData.jwt_token);
-    // localStorage.setItem('refresh_token', authData.refresh_token); // Removed
-    // localStorage.setItem('access_token', authData.access_token); // Removed
+    localStorage.setItem('refresh_token', authData.refresh_token);
+    localStorage.setItem('access_token', authData.access_token);
     localStorage.setItem('user_info', JSON.stringify(authData.user_info));
   }
 

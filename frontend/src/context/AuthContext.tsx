@@ -17,25 +17,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  const checkAuth = () => {
+  const checkAuth = async () => {
     const token = localStorage.getItem('jwt_token');
-    const userInfo = localStorage.getItem('user_info');
     
-    console.log('🔍 checkAuth called:', { token: !!token, userInfo: !!userInfo });
+    console.log('🔍 checkAuth called:', { token: !!token });
     
-    if (token && userInfo) {
+    if (token) {
       try {
-        const userData = JSON.parse(userInfo);
-        console.log('✅ User data parsed:', userData);
-        setUser(userData);
-        setIsAuthenticated(true);
-        console.log('✅ Authentication set to true');
+        const userData = await authService.getCurrentUser();
+        if (userData) {
+          console.log('✅ User data fetched:', userData);
+          setUser(userData);
+          setIsAuthenticated(true);
+          console.log('✅ Authentication set to true');
+        } else {
+          console.log('❌ No user data returned');
+          setIsAuthenticated(false);
+          setUser(null);
+        }
       } catch (error) {
-        console.error('❌ Error parsing user info:', error);
+        console.error('❌ Error fetching user info:', error);
         logout();
       }
     } else {
-      console.log('❌ No token or user info found');
+      console.log('❌ No token found');
       setIsAuthenticated(false);
       setUser(null);
     }
@@ -66,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for storage changes (when tokens are added/removed)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'jwt_token' || e.key === 'user_info') {
+      if (e.key === 'jwt_token') {
         checkAuth();
       }
     };
@@ -80,11 +85,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     window.addEventListener('focus', handleFocus);
 
+    // Set up periodic refresh of user data
+    const refreshInterval = setInterval(() => {
+      if (isAuthenticated) {
+        checkAuth();
+      }
+    }, 60000); // Refresh every minute
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleFocus);
+      clearInterval(refreshInterval);
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const value: AuthContextType = {
     isAuthenticated,

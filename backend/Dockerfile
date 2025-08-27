@@ -19,6 +19,7 @@ RUN apt-get update \
         libpq-dev \
         curl \
         git \
+        netcat-traditional \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -49,5 +50,11 @@ USER appuser
 # Expose port
 EXPOSE 5000
 
-# Run the application with hot reload
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+# Copy and set permissions for entrypoint script
+COPY scripts/entrypoint.sh /entrypoint.sh
+USER root
+RUN chmod +x /entrypoint.sh
+USER appuser
+
+# Run the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]

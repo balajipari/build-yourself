@@ -2,7 +2,7 @@
 SQLAlchemy models for the Build Yourself API
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint
+from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ENUM
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -41,6 +41,7 @@ class User(Base):
     # Relationships
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
+    project_quota = relationship("ProjectQuota", back_populates="user", uselist=False)
 
 
 class Project(Base):
@@ -77,3 +78,27 @@ class UserFavorite(Base):
     
     # Ensure unique user-project combination
     __table_args__ = (UniqueConstraint('user_id', 'project_id', name='uq_user_project_favorite'),)
+
+
+class ProjectQuota(Base):
+    __tablename__ = "project_quotas"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    completed_projects_count = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=True)
+    
+    # Relationships
+    user = relationship("User", back_populates="project_quota")
+
+    @property
+    def free_projects_remaining(self) -> int:
+        """Calculate remaining free projects"""
+        MAX_FREE_PROJECTS = 2
+        return max(0, MAX_FREE_PROJECTS - self.completed_projects_count)
+
+    @property
+    def has_free_projects(self) -> bool:
+        """Check if user has any free projects remaining"""
+        return self.free_projects_remaining > 0

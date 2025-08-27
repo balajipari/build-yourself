@@ -1,3 +1,8 @@
+export interface ProjectQuota {
+  completed_projects_count: number;
+  free_projects_remaining: number;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -5,6 +10,7 @@ export interface User {
   picture?: string;
   is_gsuite: boolean;
   domain?: string;
+  project_quota?: ProjectQuota;
 }
 
 export interface AuthResponse {

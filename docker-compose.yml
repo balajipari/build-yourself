@@ -54,11 +54,13 @@ services:
       # Override any specific variables if needed
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       - REDIS_URL=redis://redis:6379
-    # volumes:
-    #   - ./backend:/app
-    #   - /app/__pycache__
-    #   - /app/.pytest_cache
-    #   - backend_logs_dev:/app/logs
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/migrations/__pycache__
+      - /app/migrations/versions/__pycache__
+      - backend_logs_dev:/app/logs
     ports:
       - "${API_PORT}:5000"
     depends_on:

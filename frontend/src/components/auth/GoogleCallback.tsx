@@ -28,10 +28,18 @@ const GoogleCallback: React.FC = () => {
          }
 
                   if (jwtToken && userEmail) {
-           // Store minimal auth data
+           // Store all auth data
+           const accessToken = searchParams.get('access_token');
+           const refreshToken = searchParams.get('refresh_token');
+           const userId = searchParams.get('user_id');
+           const isNewUser = searchParams.get('is_new_user') === 'true';
+
            localStorage.setItem('jwt_token', jwtToken);
+           if (accessToken) localStorage.setItem('access_token', accessToken);
+           if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+
            const userData = {
-             id: userEmail, // Use email as ID for now
+             id: userId || userEmail,
              email: userEmail,
              name: userName || userEmail,
              picture: '',

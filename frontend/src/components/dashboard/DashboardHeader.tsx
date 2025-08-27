@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import BrandLogo from './BrandLogo';
 import ProfileSection from './ProfileSection';
 
+
 const DashboardHeader: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -35,13 +36,16 @@ const DashboardHeader: React.FC = () => {
       <div className="flex items-center justify-between py-3 w-[80%] mx-auto px-8">
         <BrandLogo />
         
-        <ProfileSection 
+        <div className="flex items-center">
+
+          <ProfileSection 
           user={user}
           isDropdownOpen={isDropdownOpen}
           isLoggingOut={isLoggingOut}
           onToggleDropdown={toggleDropdown}
           onLogout={handleLogout}
         />
+        </div>
       </div>
     </header>
   );
