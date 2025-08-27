@@ -232,3 +232,66 @@ class ProjectQuotaResponse(ProjectQuotaBase):
 
     class Config:
         from_attributes = True
+
+
+# Currency schemas
+class CurrencyBase(BaseModel):
+    code: str = Field(..., min_length=3, max_length=3, description="Currency code (e.g., USD)")
+    name: str = Field(..., min_length=1, max_length=50, description="Currency name")
+    symbol: str = Field(..., min_length=1, max_length=5, description="Currency symbol")
+    rate_to_usd: float = Field(..., gt=0, description="Exchange rate to USD")
+    is_active: bool = Field(True, description="Whether the currency is active")
+
+
+class CurrencyCreate(CurrencyBase):
+    pass
+
+
+class CurrencyUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=50)
+    symbol: Optional[str] = Field(None, min_length=1, max_length=5)
+    rate_to_usd: Optional[float] = Field(None, gt=0)
+    is_active: Optional[bool] = None
+
+
+class CurrencyResponse(CurrencyBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Credit Package schemas
+class CreditPackageBase(BaseModel):
+    credits: int = Field(..., gt=0, description="Number of credits")
+    base_price_usd: float = Field(..., gt=0, description="Base price in USD")
+    is_active: bool = Field(True, description="Whether the package is active")
+
+
+class CreditPackageCreate(CreditPackageBase):
+    pass
+
+
+class CreditPackageUpdate(BaseModel):
+    credits: Optional[int] = Field(None, gt=0)
+    base_price_usd: Optional[float] = Field(None, gt=0)
+    is_active: Optional[bool] = None
+
+
+class CreditPackageResponse(CreditPackageBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Price calculation response
+class PriceResponse(BaseModel):
+    currency_code: str
+    currency_symbol: str
+    amount: float
+    credits: int

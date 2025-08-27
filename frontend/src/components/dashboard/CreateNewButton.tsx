@@ -116,7 +116,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
             <RechargeModal
           isOpen={isRechargeModalOpen}
           onClose={() => setIsRechargeModalOpen(false)}
-          onRecharge={async (amount) => {
+          onRecharge={async (packageId, currencyCode) => {
             try {
               if (!user) {
                 toast.error('Please sign in to recharge credits');
@@ -124,7 +124,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
               }
               
               const loadingToast = toast.loading('Initializing payment...');
-              await paymentService.initializePayment(user.email, user.name, amount);
+              await paymentService.initializePayment(user.email, user.name, packageId, currencyCode);
               toast.dismiss(loadingToast);
             } catch (error) {
               toast.error('Failed to initialize payment. Please try again.');

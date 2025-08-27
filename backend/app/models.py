@@ -2,7 +2,7 @@
 SQLAlchemy models for the Build Yourself API
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint, Integer
+from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint, Integer, Float
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ENUM
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -102,3 +102,39 @@ class ProjectQuota(Base):
     def has_free_projects(self) -> bool:
         """Check if user has any free projects remaining"""
         return self.free_projects_remaining > 0
+
+
+class Currency(Base):
+    __tablename__ = "currencies"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    code = Column(String(3), unique=True, nullable=False)  # e.g., USD, INR
+    name = Column(String(50), nullable=False)  # e.g., US Dollar, Indian Rupee
+    symbol = Column(String(5), nullable=False)  # e.g., $, ₹
+    rate_to_usd = Column(Float, nullable=False)  # Exchange rate to USD
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    def convert_from_usd(self, usd_amount: float) -> float:
+        """Convert USD amount to this currency"""
+        return round(usd_amount / self.rate_to_usd, 2)
+
+    def convert_to_usd(self, amount: float) -> float:
+        """Convert amount in this currency to USD"""
+        return round(amount * self.rate_to_usd, 2)
+
+
+class CreditPackage(Base):
+    __tablename__ = "credit_packages"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    credits = Column(Integer, nullable=False)
+    base_price_usd = Column(Float, nullable=False)  # Price in USD
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    def get_price_in_currency(self, currency: Currency) -> float:
+        """Get package price in specified currency"""
+        return currency.convert_from_usd(self.base_price_usd)

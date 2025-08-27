@@ -4,10 +4,12 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Optional
+from uuid import UUID
 import razorpay
 from ..dependencies import get_db
 from ..services.user_service import UserService
 from ..services.project_quota_service import ProjectQuotaService
+from ..services.currency_service import CurrencyService
 from ..auth.google_oauth import verify_jwt_token
 
 router = APIRouter()
@@ -22,8 +24,8 @@ client = razorpay.Client(
 )
 
 class OrderRequest(BaseModel):
-    amount: int  # Amount in paise
-    currency: str = "INR"
+    package_id: UUID
+    currency_code: str = "INR"
 
 class PaymentVerificationRequest(BaseModel):
     razorpay_payment_id: str
@@ -43,10 +45,22 @@ async def create_order(
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid token")
 
+        # Get price in requested currency
+        currency_service = CurrencyService(db)
+        package = currency_service.get_credit_package(request.package_id)
+        if not package:
+            raise HTTPException(status_code=404, detail="Credit package not found")
+
+        currency = currency_service.get_currency_by_code(request.currency_code)
+        if not currency:
+            raise HTTPException(status_code=404, detail="Currency not found")
+
+        amount = currency.convert_from_usd(package.base_price_usd)
+        
         # Create order
         order_data = {
-            'amount': request.amount,
-            'currency': request.currency,
+            'amount': int(amount * 100),  # Convert to smallest currency unit
+            'currency': currency.code,
             'payment_capture': 1  # Auto capture payment
         }
         order = client.order.create(data=order_data)

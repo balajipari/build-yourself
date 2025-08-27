@@ -54,6 +54,16 @@ def _register_routers(app: FastAPI):
         print(f"Error registering projects router: {e}")
     
     try:
+        from app.payments.currency_api import router as currency_router
+        print(f"Currency router loaded successfully: {currency_router}")
+        app.include_router(currency_router, prefix="/payments", tags=["Payments"])
+        print("Currency router registered successfully")
+    except ImportError as e:
+        print(f"Failed to import currency router: {e}")
+    except Exception as e:
+        print(f"Error registering currency router: {e}")
+
+    try:
         from app.payments.api import router as payments_router
         print(f"Payments router loaded successfully: {payments_router}")
         app.include_router(payments_router, prefix="/payments", tags=["Payments"])

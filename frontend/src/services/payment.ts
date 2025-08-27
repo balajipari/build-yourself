@@ -4,8 +4,94 @@ import toast from 'react-hot-toast';
 
 // Types are defined in types/razorpay.d.ts
 
+interface Currency {
+  id: string;
+  code: string;
+  name: string;
+  symbol: string;
+  rate_to_usd: number;
+  is_active: boolean;
+}
+
+interface CreditPackage {
+  id: string;
+  credits: number;
+  base_price_usd: number;
+  is_active: boolean;
+}
+
+interface PackagePrice {
+  currency_code: string;
+  currency_symbol: string;
+  amount: number;
+  credits: number;
+}
+
 class PaymentService {
-  async createOrder(amount: number) {
+  async getCurrencies(): Promise<Currency[]> {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/payments/currencies`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch currencies');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+      throw error;
+    }
+  }
+
+  async getCreditPackages(): Promise<CreditPackage[]> {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/payments/packages`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch credit packages');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching credit packages:', error);
+      throw error;
+    }
+  }
+
+  async getPackagePrice(packageId: string, currencyCode: string): Promise<PackagePrice> {
+    try {
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/payments/packages/${packageId}/price/${currencyCode}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch package price');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching package price:', error);
+      throw error;
+    }
+  }
+
+  async createOrder(packageId: string, currencyCode: string) {
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}/payments/create-order`, {
         method: 'POST',
@@ -14,8 +100,8 @@ class PaymentService {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         },
         body: JSON.stringify({
-          amount: amount * 100, // Convert to paise
-          currency: 'INR'
+          package_id: packageId,
+          currency_code: currencyCode
         })
       });
 
@@ -56,10 +142,10 @@ class PaymentService {
     }
   }
 
-  async initializePayment(userEmail: string, userName: string, amount: number) {
+  async initializePayment(userEmail: string, userName: string, packageId: string, currencyCode: string) {
     try {
       // Create order on backend
-      const orderData = await this.createOrder(amount);
+      const orderData = await this.createOrder(packageId, currencyCode);
 
       // Initialize Razorpay
       const options: RazorpayOptions = {
