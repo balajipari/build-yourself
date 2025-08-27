@@ -281,19 +281,20 @@ const Builder: React.FC = () => {
   }, [sessionId, isResetting, hasInitialized, messages.length, sendMessage, projectId]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <DashboardHeader />
-      
-      <SubHeader 
-        onBackToDashboard={handleBackToDashboard}
-        onStartOver={handleStartOver}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
-      
-      <div className="mt-5 pt-10 px-4 pb-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="w-full">
+    <div className="min-h-screen">
+      <div className="relative">
+        <DashboardHeader />
+        
+        <SubHeader 
+          onBackToDashboard={handleBackToDashboard}
+          onStartOver={handleStartOver}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+        />
+        
+        <div className="mt-5 pt-10 px-4 pb-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="w-full">
             <ChatHistory 
               messages={messages}
               questionText={questionText}
@@ -311,6 +312,7 @@ const Builder: React.FC = () => {
             />
           </div>
         </div>
+      </div>
       </div>
 
       <ConfirmationModal

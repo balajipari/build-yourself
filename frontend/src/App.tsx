@@ -41,7 +41,9 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
-        <AppRoutes />
+        <div className="min-h-screen bg-grid-pattern">
+          <AppRoutes />
+        </div>
       </Router>
     </AuthProvider>
   );

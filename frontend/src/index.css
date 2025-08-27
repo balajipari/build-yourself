@@ -82,3 +82,12 @@ html[data-reduce-motion="1"] .layer-bg, html[data-reduce-motion="1"] .layer-mid,
 /* Scroll driven effects */
 body { counter-reset: scroll; }
 
+/* Grid background */
+.bg-grid-pattern {
+  background-color: #ffffff;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+

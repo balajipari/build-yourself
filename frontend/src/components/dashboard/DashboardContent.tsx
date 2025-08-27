@@ -111,6 +111,7 @@ const DashboardContent: React.FC = () => {
   }, [apiProjects, showFavorites, favorites, selectedCategory]);
 
   return (
+    <div className="relative min-h-screen">
     <div className="mt-10 px-8 py-8 w-[80%] mx-auto">
 
       {/* Filter Actions */}
@@ -158,6 +159,7 @@ const DashboardContent: React.FC = () => {
       )}
 
 
+      </div>
     </div>
   );
 };

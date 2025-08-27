@@ -4,8 +4,8 @@ import DashboardContent from '../components/dashboard/DashboardContent';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
+    <div className="min-h-screen">
+        <DashboardHeader />
       
       <div className="pt-10">
         <DashboardContent />
