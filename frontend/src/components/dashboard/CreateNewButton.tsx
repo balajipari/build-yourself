@@ -4,6 +4,10 @@ import { BsStars } from 'react-icons/bs';
 import { IoCarSportOutline } from 'react-icons/io5';
 import { RiEBikeLine } from 'react-icons/ri';
 import { projectService } from '../../services/project';
+import { paymentService } from '../../services/payment';
+import { useAuth } from '../../context/AuthContext';
+import { RechargeModal } from './RechargeModal';
+import toast from 'react-hot-toast';
 import type { ProjectCreateSimple } from '../../types/project';
 
 interface CreateNewButtonProps {
@@ -12,6 +16,8 @@ interface CreateNewButtonProps {
 }
 
 const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, freeProjectsRemaining }) => {
+  const { user } = useAuth();
+  const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
   const [openCreateDropdown, setOpenCreateDropdown] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const createDropdownRef = useRef<HTMLDivElement>(null);
@@ -79,7 +85,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
         </div>
       ) : (
           <button
-            onClick={() => window.open('mailto:support@buildyourself.com?subject=Request%20More%20Projects')}
+            onClick={() => setIsRechargeModalOpen(true)}
             className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg cursor-pointer"
           >
             <BsStars className="w-5 h-5" />
@@ -107,8 +113,27 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
           </button>
         </div>
       )}
-    </div>
-  );
-};
+            <RechargeModal
+          isOpen={isRechargeModalOpen}
+          onClose={() => setIsRechargeModalOpen(false)}
+          onRecharge={async (amount) => {
+            try {
+              if (!user) {
+                toast.error('Please sign in to recharge credits');
+                return;
+              }
+              
+              const loadingToast = toast.loading('Initializing payment...');
+              await paymentService.initializePayment(user.email, user.name, amount);
+              toast.dismiss(loadingToast);
+            } catch (error) {
+              toast.error('Failed to initialize payment. Please try again.');
+              console.error('Payment initialization failed:', error);
+            }
+          }}
+        />
+      </div>
+    );
+  };
 
 export default CreateNewButton;

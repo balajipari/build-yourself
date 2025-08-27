@@ -1,4 +1,5 @@
 import React from 'react';
+import { Toaster } from 'react-hot-toast';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Builder from './Builder';
 import SignIn from './pages/SignIn';
@@ -43,6 +44,32 @@ const App: React.FC = () => {
       <Router>
         <div className="min-h-screen bg-grid-pattern">
           <AppRoutes />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#4ade80',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                duration: 4000,
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+              loading: {
+                duration: Infinity,
+              },
+            }}
+          />
         </div>
       </Router>
     </AuthProvider>

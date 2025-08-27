@@ -290,7 +290,8 @@ async def delete_project(
     project_id: UUID,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user_jwt),
-    x_soft_delete: bool = Header(True, description="Whether to perform soft deletion")
+    x_soft_delete: bool = Header(True, description="Whether to perform soft deletion"),
+    x_abandoned: bool = Header(False, description="Whether the project was abandoned")
 ):
     """Delete a project. By default uses soft deletion by setting status to ARCHIVED."""
     try:
@@ -308,6 +309,12 @@ async def delete_project(
             user_id=user.id,
             soft_delete=x_soft_delete
         )
+
+        # If project was abandoned, increment the quota
+        if success and x_abandoned:
+            from app.services.project_quota_service import ProjectQuotaService
+            quota_service = ProjectQuotaService(db)
+            quota_service.increment_completed_projects(user.id)
         
         if not success:
             raise HTTPException(

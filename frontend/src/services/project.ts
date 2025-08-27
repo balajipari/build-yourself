@@ -159,7 +159,7 @@ class ProjectService {
     }
   }
 
-  async deleteProject(projectId: string, softDelete: boolean = true): Promise<void> {
+  async deleteProject(projectId: string, softDelete: boolean = true, isAbandoned: boolean = false): Promise<void> {
     try {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_ENDPOINTS.PROJECTS.DELETE.replace('{id}', projectId)}`,
@@ -167,7 +167,8 @@ class ProjectService {
           method: 'DELETE',
           headers: {
             ...this.getAuthHeaders(),
-            'X-Soft-Delete': softDelete.toString()
+            'X-Soft-Delete': softDelete.toString(),
+            'X-Abandoned': isAbandoned.toString()
           },
         }
       );

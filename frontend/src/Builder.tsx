@@ -6,10 +6,12 @@ import { DashboardHeader } from './components/dashboard';
 import { API_URLS } from './config/api';
 import { MESSAGES } from './config/constants';
 import { useChat } from './context/ChatContext';
+import { useAuth } from './context/AuthContext';
 import { useApi, useBuilderState, useSession } from './hooks';
 import { projectService } from './services/project';
 
 const Builder: React.FC = () => {
+  const { checkAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { messages, setMessages, clearMessages } = useChat();
@@ -238,15 +240,16 @@ const Builder: React.FC = () => {
     
     if (projectId) {
       try {
-        await projectService.deleteProject(projectId);
+        await projectService.deleteProject(projectId, true, true); // Mark as abandoned
       } catch (error) {
         console.error('Failed to delete project:', error);
       }
     }
     
     clearSessionAndReset();
+    await checkAuth(); // Refresh user data
     navigate('/dashboard');
-  }, [clearSessionAndReset, navigate, projectId]);
+  }, [clearSessionAndReset, navigate, projectId, checkAuth]);
 
   useEffect(() => {
     if (projectId) {
@@ -330,10 +333,10 @@ const Builder: React.FC = () => {
         isOpen={showBackToDashboardModal}
         title="Leave Builder"
         message={projectId 
-          ? "Are you sure you want to leave? This will delete your draft project and all progress will be lost."
+          ? `Are you sure you want to leave? This will count towards your project quota and all progress will be lost.`
           : "Are you sure you want to leave? All your progress will be lost."
         }
-        confirmText={projectId ? "Yes, Delete & Leave" : "Yes, Leave"}
+        confirmText={projectId ? "Yes, Leave & Count Quota" : "Yes, Leave"}
         cancelText="Cancel"
         onConfirm={confirmBackToDashboard}
         onCancel={() => setShowBackToDashboardModal(false)}
