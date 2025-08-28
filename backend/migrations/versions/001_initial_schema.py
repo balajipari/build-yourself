@@ -21,9 +21,7 @@ def upgrade() -> None:
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
     op.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto"')
     
-    # Create custom types
-    op.execute("CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED')")
-    op.execute("CREATE TYPE project_status AS ENUM ('DRAFT', 'IN_PROGRESS', 'COMPLETED', 'ARCHIVED')")
+    # Enums will be created by SQLAlchemy when creating tables
     
     # Create users table
     op.create_table('users',

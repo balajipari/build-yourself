@@ -73,6 +73,16 @@ def _register_routers(app: FastAPI):
     except Exception as e:
         print(f"Error registering payments router: {e}")
 
+    try:
+        from app.feedback.api import router as feedback_router
+        print(f"Feedback router loaded successfully: {feedback_router}")
+        app.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])
+        print("Feedback router registered successfully")
+    except ImportError as e:
+        print(f"Failed to import feedback router: {e}")
+    except Exception as e:
+        print(f"Error registering feedback router: {e}")
+
 app = _create_app()
 _register_routers(app)
 

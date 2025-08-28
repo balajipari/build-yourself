@@ -31,6 +31,9 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/projects/categories/list',
     STATS: '/projects/stats/summary',
   },
+  FEEDBACK: {
+    SUBMIT: '/feedback/submit',
+  },
 } as const;
 
 export const DEFAULT_IMAGES = {

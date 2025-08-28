@@ -2,10 +2,10 @@
 SQLAlchemy models for the Build Yourself API
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint, Integer, Float
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ENUM
+from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Enum, UniqueConstraint, Integer, Float, CheckConstraint
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB, ENUM
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
 import enum
 
@@ -42,6 +42,7 @@ class User(Base):
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
     project_quota = relationship("ProjectQuota", back_populates="user", uselist=False)
+    feedback = relationship("Feedback", back_populates="user", lazy="dynamic")
 
 
 class Project(Base):
@@ -62,6 +63,11 @@ class Project(Base):
     # Relationships
     user = relationship("User", back_populates="projects")
     favorites = relationship("UserFavorite", back_populates="project", cascade="all, delete-orphan")
+
+    @property
+    def is_favorite(self) -> bool:
+        """Check if project has any favorites"""
+        return bool(self.favorites)
 
 
 class UserFavorite(Base):
@@ -123,6 +129,25 @@ class Currency(Base):
     def convert_to_usd(self, amount: float) -> float:
         """Convert amount in this currency to USD"""
         return round(amount * self.rate_to_usd, 2)
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    feedback_text = Column(Text, nullable=False)
+    selected_tags = Column(ARRAY(String), nullable=True)
+    rating = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationship
+    user = relationship("User", back_populates="feedback")
+
+    # Constraints
+    __table_args__ = (
+        CheckConstraint('rating >= 1 AND rating <= 5', name='ck_feedback_rating_range'),
+    )
 
 
 class CreditPackage(Base):

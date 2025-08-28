@@ -1,5 +1,6 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import FeedbackButton from './components/common/FeedbackButton';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Builder from './Builder';
 import SignIn from './pages/SignIn';
@@ -44,6 +45,7 @@ const App: React.FC = () => {
       <Router>
         <div className="min-h-screen bg-grid-pattern">
           <AppRoutes />
+          <FeedbackButton />
           <Toaster
             position="top-right"
             toastOptions={{

@@ -93,13 +93,16 @@ def get_current_user_jwt(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> dict:
     """
-    Get current authenticated user from JWT token
+    Get current authenticated user from JWT token (required)
     
     Args:
         credentials: HTTP Bearer token
         
     Returns:
         User data dictionary from JWT payload
+        
+    Raises:
+        HTTPException: If token is missing or invalid
     """
     try:
         from .auth.google_oauth import verify_jwt_token
@@ -229,6 +232,40 @@ def check_redis_health() -> dict:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Redis health check failed: {str(e)}"
         )
+
+
+def get_current_user_jwt_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+) -> Optional[dict]:
+    """
+    Get current authenticated user from JWT token (optional)
+    
+    Args:
+        credentials: Optional HTTP Bearer token
+        
+    Returns:
+        User data dictionary from JWT payload or None if no token or invalid
+    """
+    if not credentials:
+        return None
+        
+    try:
+        from .auth.google_oauth import verify_jwt_token
+        
+        payload = verify_jwt_token(credentials.credentials)
+        if not payload:
+            return None
+            
+        return {
+            "id": payload["sub"],
+            "email": payload["email"],
+            "name": payload.get("name", ""),
+            "picture": payload.get("picture", ""),
+            "is_gsuite": payload.get("is_gsuite", False),
+            "domain": payload.get("domain", "")
+        }
+    except Exception:
+        return None
 
 
 def check_session_manager_health() -> dict:

@@ -74,23 +74,8 @@ services:
 
 volumes:
   postgres_data_dev:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data/dev/postgres
   redis_data_dev:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data/dev/redis
   backend_logs_dev:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data/dev/logs
 
 networks:
   build_yourself_network_dev:

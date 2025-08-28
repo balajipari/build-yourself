@@ -5,6 +5,7 @@ import FilterActions from './FilterActions';
 import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
 import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
+import toast from 'react-hot-toast';
 
 const DashboardContent: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -66,7 +67,7 @@ const DashboardContent: React.FC = () => {
       console.error('Failed to toggle favorite:', error);
       // Refresh projects to ensure we have the latest state
       fetchProjects();
-      alert('Failed to update favorite status. The project may have been deleted or you may not have permission.');
+      toast.error('Failed to update favorite status. The project may have been deleted or you may not have permission.');
     }
   }, [fetchProjects]);
 
@@ -75,21 +76,44 @@ const DashboardContent: React.FC = () => {
       await projectService.downloadImage(projectId);
     } catch (error) {
       console.error('Failed to download image:', error);
-      alert('Failed to download image. Please try again.');
+      toast.error('Failed to download image. Please try again.');
     }
   }, []);
 
   const handleDelete = useCallback(async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      try {
-        await projectService.deleteProject(projectId);
-        // Refresh projects after deletion
-        fetchProjects();
-      } catch (error) {
-        console.error('Failed to delete project:', error);
-        alert('Failed to delete project. Please not found');
-      }
-    }
+    toast((t) => (
+      <div className="flex items-center gap-4">
+        <span>Are you sure you want to delete this project?</span>
+        <div className="flex gap-2">
+          <button
+            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await projectService.deleteProject(projectId);
+                toast.success('Project deleted successfully');
+                // Refresh projects after deletion
+                fetchProjects();
+              } catch (error) {
+                console.error('Failed to delete project:', error);
+                toast.error('Failed to delete project. Project not found.');
+              }
+            }}
+          >
+            Delete
+          </button>
+          <button
+            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 5000,
+      position: 'top-center',
+    })
   }, [fetchProjects]);
 
   // Filter and transform projects

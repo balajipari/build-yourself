@@ -136,7 +136,8 @@ class ProjectResponse(ProjectBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
-    
+    is_favorite: bool = False
+
     class Config:
         from_attributes = True
     
@@ -192,8 +193,6 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page_size: int
     total_pages: int
 
-
-# Favorite schemas
 class FavoriteToggle(BaseModel):
     project_id: UUID = Field(..., description="Project ID to toggle favorite status")
 
@@ -223,6 +222,8 @@ class ProjectQuotaBase(BaseModel):
 class ProjectQuotaCreate(ProjectQuotaBase):
     user_id: UUID
 
+class ProjectQuotaUpdate(BaseModel):
+    completed_projects_count: Optional[int] = None
 
 class ProjectQuotaResponse(ProjectQuotaBase):
     id: UUID
@@ -233,7 +234,6 @@ class ProjectQuotaResponse(ProjectQuotaBase):
     class Config:
         from_attributes = True
 
-
 # Currency schemas
 class CurrencyBase(BaseModel):
     code: str = Field(..., min_length=3, max_length=3, description="Currency code (e.g., USD)")
@@ -242,17 +242,14 @@ class CurrencyBase(BaseModel):
     rate_to_usd: float = Field(..., gt=0, description="Exchange rate to USD")
     is_active: bool = Field(True, description="Whether the currency is active")
 
-
 class CurrencyCreate(CurrencyBase):
     pass
-
 
 class CurrencyUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=50)
     symbol: Optional[str] = Field(None, min_length=1, max_length=5)
     rate_to_usd: Optional[float] = Field(None, gt=0)
     is_active: Optional[bool] = None
-
 
 class CurrencyResponse(CurrencyBase):
     id: UUID
@@ -262,23 +259,19 @@ class CurrencyResponse(CurrencyBase):
     class Config:
         from_attributes = True
 
-
 # Credit Package schemas
 class CreditPackageBase(BaseModel):
     credits: int = Field(..., gt=0, description="Number of credits")
     base_price_usd: float = Field(..., gt=0, description="Base price in USD")
     is_active: bool = Field(True, description="Whether the package is active")
 
-
 class CreditPackageCreate(CreditPackageBase):
     pass
-
 
 class CreditPackageUpdate(BaseModel):
     credits: Optional[int] = Field(None, gt=0)
     base_price_usd: Optional[float] = Field(None, gt=0)
     is_active: Optional[bool] = None
-
 
 class CreditPackageResponse(CreditPackageBase):
     id: UUID
@@ -288,10 +281,26 @@ class CreditPackageResponse(CreditPackageBase):
     class Config:
         from_attributes = True
 
-
-# Price calculation response
 class PriceResponse(BaseModel):
     currency_code: str
     currency_symbol: str
     amount: float
     credits: int
+
+# Feedback schemas
+class FeedbackCreate(BaseModel):
+    feedback_text: str = Field(..., description="Feedback text content")
+    selected_tags: Optional[List[str]] = Field(None, description="Selected suggestion tags")
+    rating: Optional[float] = Field(None, ge=1, le=5, description="Rating between 1 and 5")
+    user_id: Optional[UUID] = Field(None, description="User ID for authenticated feedback")
+
+class FeedbackResponse(BaseModel):
+    id: UUID
+    feedback_text: str
+    selected_tags: Optional[List[str]] = Field(None, description="Selected suggestion tags")
+    rating: Optional[float] = Field(None, description="Rating between 1 and 5")
+    user_id: Optional[UUID] = Field(None, description="User ID for authenticated feedback")
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
