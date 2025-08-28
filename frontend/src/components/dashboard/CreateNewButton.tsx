@@ -70,7 +70,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
       {freeProjectsRemaining > 0 ? (
         <div className="flex items-center gap-3">
           <div className="text-orange-500 font-medium">
-            {freeProjectsRemaining} free projects left
+            {freeProjectsRemaining} credits left
           </div>
         <button
           onClick={() => setOpenCreateDropdown(!openCreateDropdown)}
@@ -102,6 +102,8 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
           >
             <RiEBikeLine className="w-5 h-5 text-[#8c52ff]" />
             <span className="font-medium">Bike</span>
+            <span className="font-medium bg-gray-200 rounded-full px-2 py-1">🪙1</span>
+
           </button>
           <button
             onClick={() => handleCreateSelect('car')}
@@ -110,6 +112,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
           >
             <IoCarSportOutline className="w-5 h-5 text-[#8c52ff]" />
             <span className="font-medium">Car</span>
+            <span className="font-medium bg-gray-200 rounded-full px-2 py-1">🪙1</span>
           </button>
         </div>
       )}

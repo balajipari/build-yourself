@@ -9,6 +9,7 @@ import { useChat } from './context/ChatContext';
 import { useAuth } from './context/AuthContext';
 import { useApi, useBuilderState, useSession } from './hooks';
 import { projectService } from './services/project';
+import toast from 'react-hot-toast';
 
 const Builder: React.FC = () => {
   const { checkAuth } = useAuth();
@@ -153,13 +154,23 @@ const Builder: React.FC = () => {
       if (data.is_complete) {
         setIsComplete(true);
         resetQuestionState();
-        await fetchImage();
+        // Start image generation but don't wait for it
+        generateImage({ 
+          session_id: sessionId,
+          project_id: projectId 
+        }).catch(error => {
+          console.error('Error in image generation:', error);
+        });
+        
+        await checkAuth();
+        toast.success('Your bike is being created in the background! Redirecting to dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1500); // Give time to see the success message
       } else {
         setQuestionState(data);
       }
     } catch (error) {
       console.error('Error in chat:', error);
-      alert(MESSAGES.ERROR.BACKEND);
+      toast.error(MESSAGES.ERROR.BACKEND);
     }
   }, [sessionId, messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState, projectId]);
 
@@ -174,7 +185,7 @@ const Builder: React.FC = () => {
         setProjectTitle(newTitle);
       } catch (error) {
         console.error('Failed to update project title:', error);
-        alert('Failed to update project title. Please try again.');
+        toast.error('Failed to update project title. Please try again.');
       }
     }
   }, [projectId]);
@@ -187,18 +198,15 @@ const Builder: React.FC = () => {
   }, [customInput, sendMessage, setCustomInput]);
 
   const fetchImage = useCallback(async () => {
-    try {
-      const data = await generateImage({ 
-        session_id: sessionId,
-        project_id: projectId 
-      });
-      if (data) {
-        setImageBase64(data.image_base64);
-      }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      alert(MESSAGES.ERROR.IMAGE_GENERATION);
+    const data = await generateImage({ 
+      session_id: sessionId,
+      project_id: projectId 
+    });
+    if (data) {
+      setImageBase64(data.image_base64);
+      return data;
     }
+    return null;
   }, [sessionId, generateImage, setImageBase64, projectId]);
 
   const downloadImage = useCallback(() => {

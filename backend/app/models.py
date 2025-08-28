@@ -92,6 +92,7 @@ class ProjectQuota(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
     completed_projects_count = Column(Integer, default=0, nullable=False)
+    credits = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=True)
     
@@ -102,12 +103,17 @@ class ProjectQuota(Base):
     def free_projects_remaining(self) -> int:
         """Calculate remaining free projects"""
         MAX_FREE_PROJECTS = 2
-        return max(0, MAX_FREE_PROJECTS - self.completed_projects_count)
+        free_remaining = max(0, MAX_FREE_PROJECTS - self.completed_projects_count)
+        return free_remaining + self.credits
 
     @property
     def has_free_projects(self) -> bool:
         """Check if user has any free projects remaining"""
         return self.free_projects_remaining > 0
+
+    def add_credits(self, amount: int) -> None:
+        """Add credits to the user's quota"""
+        self.credits += amount
 
 
 class Currency(Base):

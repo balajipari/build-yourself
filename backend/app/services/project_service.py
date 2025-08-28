@@ -191,10 +191,19 @@ class ProjectService:
             if not project:
                 return None
             
+            # Check if project is being marked as completed
+            old_status = project.status
+            
             # Update only provided fields
             update_data = project_data.dict(exclude_unset=True)
             for field, value in update_data.items():
                 setattr(project, field, value)
+            
+            # If project is being marked as completed, increment the quota
+            if 'status' in update_data and update_data['status'] == ProjectStatus.COMPLETED and old_status != ProjectStatus.COMPLETED:
+                from ..services.project_quota_service import ProjectQuotaService
+                quota_service = ProjectQuotaService(self.db)
+                quota_service.increment_completed_projects(user_id)
             
             self.db.commit()
             self.db.refresh(project)

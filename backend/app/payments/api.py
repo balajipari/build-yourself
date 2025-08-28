@@ -16,12 +16,14 @@ router = APIRouter()
 security = HTTPBearer()
 
 # Initialize Razorpay client
-client = razorpay.Client(
-    auth=(
-        os.getenv("RAZORPAY_KEY_ID", ""),
-        os.getenv("RAZORPAY_KEY_SECRET", "")
-    )
-)
+razorpay_key_id = os.getenv("RAZORPAY_KEY_ID", "")
+razorpay_key_secret = os.getenv("RAZORPAY_KEY_SECRET", "")
+
+if not razorpay_key_id or not razorpay_key_secret:
+    raise ValueError("Razorpay credentials not configured")
+
+
+client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
 
 class OrderRequest(BaseModel):
     package_id: UUID
@@ -86,15 +88,7 @@ async def verify_payment(
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        # Verify payment signature
-        params_dict = {
-            'razorpay_payment_id': request.razorpay_payment_id,
-            'razorpay_order_id': request.razorpay_order_id,
-            'razorpay_signature': request.razorpay_signature
-        }
-        client.utility.verify_payment_signature(params_dict)
-
-        # Get user and update quota
+        # Get user first to ensure they exist
         user_service = UserService(db)
         quota_service = ProjectQuotaService(db)
         
@@ -102,11 +96,50 @@ async def verify_payment(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # Reset project quota
-        quota = quota_service.get_user_quota(user.id)
-        quota.completed_projects_count = 0
-        db.commit()
+        try:
+            # Verify payment signature
+            params_dict = {
+                'razorpay_payment_id': request.razorpay_payment_id,
+                'razorpay_order_id': request.razorpay_order_id,
+                'razorpay_signature': request.razorpay_signature
+            }
+            client.utility.verify_payment_signature(params_dict)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Payment verification failed: {str(e)}")
 
-        return {"success": True, "message": "Payment verified and credits added"}
+        try:
+            # Get the credit package details
+            currency_service = CurrencyService(db)
+            payment = client.payment.fetch(request.razorpay_payment_id)
+            order = client.order.fetch(request.razorpay_order_id)
+            
+            # Find the package that matches the order amount and currency
+            packages = currency_service.get_credit_packages()
+            currency = currency_service.get_currency_by_code(order['currency'])
+            if not currency:
+                raise HTTPException(status_code=400, detail=f"Currency {order['currency']} not found")
+            
+            matching_package = None
+            for package in packages:
+                amount = currency.convert_from_usd(package.base_price_usd)
+                amount_in_smallest_unit = int(amount * 100)
+                if amount_in_smallest_unit == order['amount']:
+                    matching_package = package
+                    break
+                    
+            if not matching_package:
+                raise HTTPException(status_code=400, detail="Could not match payment to credit package")
+                
+            # Add credits to user's quota
+            quota_service.add_credits(user.id, matching_package.credits)
+
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error processing payment: {str(e)}")
+        
+        return {
+            "success": True,
+            "message": f"Payment verified and {matching_package.credits} credits added",
+            "credits_added": matching_package.credits
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

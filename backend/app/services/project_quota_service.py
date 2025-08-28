@@ -32,7 +32,14 @@ class ProjectQuotaService:
     def increment_completed_projects(self, user_id: UUID) -> ProjectQuota:
         """Increment completed projects count"""
         quota = self.get_user_quota(user_id)
-        quota.completed_projects_count += 1
+        
+        # First use credits if available
+        if quota.credits > 0:
+            quota.credits -= 1
+        else:
+            # If no credits, increment completed projects count
+            quota.completed_projects_count += 1
+            
         self.db.commit()
         self.db.refresh(quota)
         return quota
@@ -41,3 +48,11 @@ class ProjectQuotaService:
         """Check if user can create a new project"""
         quota = self.get_user_quota(user_id)
         return quota.has_free_projects
+
+    def add_credits(self, user_id: UUID, amount: int) -> ProjectQuota:
+        """Add credits to user's quota"""
+        quota = self.get_user_quota(user_id)
+        quota.add_credits(amount)
+        self.db.commit()
+        self.db.refresh(quota)
+        return quota
