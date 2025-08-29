@@ -199,11 +199,13 @@ class ProjectService:
             for field, value in update_data.items():
                 setattr(project, field, value)
             
-            # If project is being marked as completed, increment the quota
+            # If project is being marked as completed, increment the quota and cleanup session
             if 'status' in update_data and update_data['status'] == ProjectStatus.COMPLETED and old_status != ProjectStatus.COMPLETED:
                 from ..services.project_quota_service import ProjectQuotaService
+                from ..bike.utils import cleanup_session
                 quota_service = ProjectQuotaService(self.db)
                 quota_service.increment_completed_projects(user_id)
+                cleanup_session(str(project_id))
             
             self.db.commit()
             self.db.refresh(project)
@@ -220,6 +222,9 @@ class ProjectService:
             if not project:
                 return False
             
+            from ..bike.utils import cleanup_session
+            cleanup_session(str(project_id))
+
             if soft_delete:
                 project.status = ProjectStatus.ARCHIVED
                 self.db.commit()

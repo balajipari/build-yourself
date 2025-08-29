@@ -16,9 +16,6 @@ export function validateCustomInput(input: string): { isValid: boolean; error?: 
   return { isValid: true };
 }
 
-export function validateSessionId(sessionId: string): boolean {
-  return typeof sessionId === 'string' && sessionId.length > 0;
-}
 
 export function sanitizeInput(input: string): string {
   return input.trim().replace(/\s+/g, ' ');

@@ -158,29 +158,29 @@ def validate_custom_message_for_image_generation(custom_message: str, client) ->
             "explanation": "Unable to validate message, please use safer alternatives"
         }
 
-def initialize_session(session_id: str, system_prompt: str) -> List[dict]:
-    """Initialize a new chat session"""
+def initialize_session(project_id: str, system_prompt: str) -> List[dict]:
+    """Initialize a new chat session using project_id"""
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": "Let's start building my dream bike!"}
     ]
-    custom_followup_tracking[session_id] = {}
+    custom_followup_tracking[project_id] = {}
     return messages
 
-def get_session_messages(session_id: str, system_prompt: str) -> List[dict]:
-    """Get or initialize session messages"""
-    if session_id not in session_store:
-        return initialize_session(session_id, system_prompt)
-    return session_store[session_id]
+def get_session_messages(project_id: str, system_prompt: str) -> List[dict]:
+    """Get or initialize session messages using project_id"""
+    if project_id not in session_store:
+        return initialize_session(project_id, system_prompt)
+    return session_store[project_id]
 
-def track_custom_followup(session_id: str, question_content) -> None:
+def track_custom_followup(project_id: str, question_content) -> None:
     """Track custom follow-up questions"""
     if hasattr(question_content, 'question_type') and question_content.question_type == "custom_followup":
         parent = getattr(question_content, 'parent_question', None)
         if parent:
-            if parent not in custom_followup_tracking[session_id]:
-                custom_followup_tracking[session_id][parent] = 0
-            custom_followup_tracking[session_id][parent] += 1
+            if parent not in custom_followup_tracking[project_id]:
+                custom_followup_tracking[project_id][parent] = 0
+            custom_followup_tracking[project_id][parent] += 1
 
 def validate_custom_fields(bike_spec) -> dict:
     """Validate and clean custom fields"""
@@ -244,6 +244,17 @@ def get_summary_prompt(messages: List[Dict], client) -> str:
     )
     
     return response.choices[0].message.content.strip()[:1000]
+
+def cleanup_session(project_id: str) -> None:
+    """Clean up session data when project is completed or deleted"""
+    if project_id in session_store:
+        del session_store[project_id]
+    if project_id in bike_specs:
+        del bike_specs[project_id]
+    if project_id in image_files:
+        del image_files[project_id]
+    if project_id in custom_followup_tracking:
+        del custom_followup_tracking[project_id]
 
 def generate_bike_image(prompt: str, client) -> str:
     """Generate bike image using OpenAI and return base64 string"""

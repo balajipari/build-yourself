@@ -7,7 +7,7 @@ import { API_URLS } from './config/api';
 import { MESSAGES } from './config/constants';
 import { useChat } from './context/ChatContext';
 import { useAuth } from './context/AuthContext';
-import { useApi, useBuilderState, useSession } from './hooks';
+import { useApi, useBuilderState } from './hooks';
 import { projectService } from './services/project';
 import toast from 'react-hot-toast';
 
@@ -17,7 +17,6 @@ const Builder: React.FC = () => {
   const location = useLocation();
   const { messages, setMessages, clearMessages } = useChat();
   const { loading, chatComplete, generateImage } = useApi();
-  const { sessionId, resetSession } = useSession();
   const {
     isComplete,
     imageBase64,
@@ -30,7 +29,6 @@ const Builder: React.FC = () => {
     resetAllState,
     setQuestionState,
     setIsComplete,
-    setImageBase64,
     setCustomInput,
   } = useBuilderState();
 
@@ -124,8 +122,8 @@ const Builder: React.FC = () => {
   }, [setMessages]);
 
   const sendMessage = useCallback(async (userContent?: string) => {
-    if (!sessionId) {
-      console.warn('Session ID is empty, cannot send message');
+    if (!projectId) {
+      console.warn('Project ID is empty, cannot send message');
       return;
     }
 
@@ -135,12 +133,9 @@ const Builder: React.FC = () => {
     }
 
     try {
-      const validProjectId = projectId && typeof projectId === 'string' && projectId.trim() !== '' ? projectId : undefined;
-      
       const data = await chatComplete({ 
-        session_id: sessionId, 
-        user_message,
-        project_id: validProjectId
+        project_id: projectId,
+        user_message
       });
       
       if (!data) return;
@@ -156,7 +151,6 @@ const Builder: React.FC = () => {
         resetQuestionState();
         // Start image generation but don't wait for it
         generateImage({ 
-          session_id: sessionId,
           project_id: projectId 
         }).catch(error => {
           console.error('Error in image generation:', error);
@@ -172,7 +166,7 @@ const Builder: React.FC = () => {
       console.error('Error in chat:', error);
       toast.error(MESSAGES.ERROR.BACKEND);
     }
-  }, [sessionId, messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState, projectId]);
+  }, [messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState, projectId]);
 
   const handleOptionSelect = useCallback((optionText: string) => {
     sendMessage(optionText);
@@ -197,26 +191,15 @@ const Builder: React.FC = () => {
     }
   }, [customInput, sendMessage, setCustomInput]);
 
-  const fetchImage = useCallback(async () => {
-    const data = await generateImage({ 
-      session_id: sessionId,
-      project_id: projectId 
-    });
-    if (data) {
-      setImageBase64(data.image_base64);
-      return data;
-    }
-    return null;
-  }, [sessionId, generateImage, setImageBase64, projectId]);
 
   const downloadImage = useCallback(() => {
     const link = document.createElement('a');
-    link.href = `${API_URLS.IMAGE_DOWNLOAD}/${sessionId}`;
-    link.download = `custom_bike_${sessionId}.png`;
+    link.href = `${API_URLS.IMAGE_DOWNLOAD}/project/${projectId}`;
+    link.download = `custom_bike_${projectId}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [sessionId]);
+  }, [projectId]);
 
   const handleStartOver = useCallback(() => {
     setShowStartOverModal(true);
@@ -226,13 +209,12 @@ const Builder: React.FC = () => {
     setIsResetting(true);
     clearMessages();
     resetAllState();
-    resetSession();
     setHasInitialized(false);
     
     setTimeout(() => {
       setIsResetting(false);
     }, 100);
-  }, [clearMessages, resetAllState, resetSession]);
+  }, [clearMessages, resetAllState]);
 
   const confirmStartOver = useCallback(() => {
     setShowStartOverModal(false);
@@ -275,21 +257,21 @@ const Builder: React.FC = () => {
       return;
     }
     
-    if (sessionId && messages.length === 0 && !hasInitialized) {
+    if (projectId && messages.length === 0 && !hasInitialized) {
       setHasInitialized(true);
       sendMessage();
     }
-  }, [isNewBuildSession, hasInitialized, isResetting, sessionId, messages.length, sendMessage, clearMessages, resetAllState, projectId]);
+  }, [isNewBuildSession, hasInitialized, isResetting, projectId, messages.length, sendMessage, clearMessages, resetAllState]);
 
   useEffect(() => {
     if (isResetting || !hasInitialized) return;
 
-    if (sessionId && messages.length === 0) {
+    if (projectId && messages.length === 0) {
       setTimeout(() => {
         sendMessage();
       }, 100);
     }
-  }, [sessionId, isResetting, hasInitialized, messages.length, sendMessage, projectId]);
+  }, [projectId, isResetting, hasInitialized, messages.length, sendMessage]);
 
   return (
     <div className="min-h-screen">

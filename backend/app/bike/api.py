@@ -188,12 +188,11 @@ async def validate_custom_message(request: dict):
 @router.post("/chat/complete", response_model=ChatResponse)
 def chat_complete(request: ChatSessionRequest):
     client = get_openai_client()
-    session_id = request.session_id
     project_id = request.project_id
-    messages = get_session_messages(session_id, STRUCTURED_SYSTEM_PROMPT)
+    messages = get_session_messages(project_id, STRUCTURED_SYSTEM_PROMPT)
     
-    # If the user message is empty and there is a project_id, fetch project conversations
-    if (not request.user_message or request.user_message.strip() == "") and project_id:
+    # If the user message is empty, fetch project conversations
+    if not request.user_message or request.user_message.strip() == "":
         project_convos = fetch_project_conversations(project_id)
         if project_convos is not None:
             # Extend messages with project conversations instead of appending the array
@@ -227,7 +226,7 @@ def chat_complete(request: ChatSessionRequest):
             )
         
         messages.append({"role": "assistant", "content": ai_message})
-        session_store[session_id] = messages
+        session_store[project_id] = messages
         
         # Save bike configuration if this is a completion response
         if project_id and structured_response.is_completion_response():
@@ -239,7 +238,7 @@ def chat_complete(request: ChatSessionRequest):
         if structured_response.is_question_response():
             question_content = structured_response.get_question_content()
             if question_content:
-                track_custom_followup(session_id, question_content)
+                track_custom_followup(project_id, question_content)
                 return ChatResponse.from_question_response(structured_response, question_content)
             return ChatResponse.from_fallback_response(structured_response)
         
@@ -247,7 +246,7 @@ def chat_complete(request: ChatSessionRequest):
             bike_spec = structured_response.get_bike_specification()
             if bike_spec:
                 bike_spec.validate_and_clean_custom_fields(validate_custom_input)
-                bike_specs[session_id] = bike_spec
+                bike_specs[project_id] = bike_spec
                 return ChatResponse.from_completion_response(structured_response)
             return ChatResponse.from_fallback_response(structured_response)
         
@@ -292,13 +291,12 @@ def fetch_project_conversations(project_id):
 @router.post("/image/generate", response_model=ImageGenerationResponse)
 def generate_image(request: ImageGenerationRequest):
     client = get_openai_client()
-    session_id = request.session_id
     project_id = request.project_id
     
-    if session_id not in bike_specs:
+    if project_id not in bike_specs:
         raise HTTPException(status_code=400, detail="Bike specification not found. Complete the chat first.")
 
-    bike_spec = bike_specs[session_id]
+    bike_spec = bike_specs[project_id]
 
     try:
         specs = bike_spec.get_image_generation_specs()
@@ -306,8 +304,8 @@ def generate_image(request: ImageGenerationRequest):
         
         image_base64 = generate_bike_image(summary_prompt, client)
         
-        file_path = save_image_to_file(image_base64, session_id)
-        image_files[session_id] = file_path
+        file_path = save_image_to_file(image_base64, project_id)
+        image_files[project_id] = file_path
         
         # Save image to project if project_id is provided
         if project_id:
@@ -338,18 +336,18 @@ def generate_image(request: ImageGenerationRequest):
         # Generic error
         raise HTTPException(status_code=500, detail=f"Image generation failed: {error_message}")
 
-@router.get("/image/download/{session_id}")
-def download_image(session_id: str):
-    if session_id not in image_files:
-        raise HTTPException(status_code=404, detail="Image not found for this session.")
+@router.get("/image/download/{project_id}")
+def download_image(project_id: str):
+    if project_id not in image_files:
+        raise HTTPException(status_code=404, detail="Image not found for this project.")
     
-    file_path = image_files[session_id]
+    file_path = image_files[project_id]
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Image file not found.")
     
     return FileResponse(
         path=file_path,
-        filename=f"custom_bike_{session_id}.png",
+        filename=f"custom_bike_{project_id}.png",
         media_type="image/png"
     )
 
