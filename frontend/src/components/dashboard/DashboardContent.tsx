@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import AdSense from '../common/AdSense';
 import { projectService } from '../../services/project';
 import type { ProjectSearch } from '../../types/project';
 import FilterActions from './FilterActions';
@@ -136,7 +137,19 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div className="relative min-h-screen">
-    <div className="mt-10 px-8 py-8 w-[80%] mx-auto">
+      <div className="flex justify-between gap-4 mt-10 px-4 py-8 mx-auto w-[95%]">
+        {/* Left Ad Banner */}
+        <div className="w-[160px] hidden lg:block">
+                    <div className="sticky top-4 bg-gray-100 rounded-lg h-[600px] overflow-hidden">
+            <AdSense
+              adSlot="7678234258"
+              style={{ display: 'block', height: '100%', width: '100%' }}
+            />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 px-10">
 
       {/* Filter Actions */}
       <FilterActions
@@ -181,8 +194,17 @@ const DashboardContent: React.FC = () => {
           onDelete={handleDelete}
         />
       )}
+        </div>
 
-
+        {/* Right Ad Banner */}
+        <div className="w-[160px] hidden lg:block">
+          <div className="sticky top-4 bg-gray-100 rounded-lg h-[600px] overflow-hidden">
+            <AdSense
+              adSlot="7678234258"
+              style={{ display: 'block', height: '100%', width: '100%' }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

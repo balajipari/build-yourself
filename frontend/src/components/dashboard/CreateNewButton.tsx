@@ -69,8 +69,8 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({ onProjectCreated, fre
     <div className="relative" ref={createDropdownRef}>
       {freeProjectsRemaining > 0 ? (
         <div className="flex items-center gap-3">
-          <div className="text-orange-500 font-medium">
-            {freeProjectsRemaining} credits left
+          <div className="text-gray-500 font-medium text-center">
+            You have: <span className="font-semibold bg-gray-200 text-green-600 rounded-full pl-2.5 pr-2 py-0.5">{freeProjectsRemaining}🪙</span>
           </div>
         <button
           onClick={() => setOpenCreateDropdown(!openCreateDropdown)}
