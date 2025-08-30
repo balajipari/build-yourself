@@ -33,7 +33,7 @@ const DashboardHeader: React.FC = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200">
-      <div className="flex items-center justify-between py-3 w-[80%] mx-auto px-8">
+      <div className="flex items-center justify-between py-3 px-4 lg:px-8 w-full xl:w-[80%] mx-auto">
         <BrandLogo />
         
         <div className="flex items-center">

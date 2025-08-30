@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../../types/chat';
 import type { QuestionOption } from '../../types/builder';
 import { projectService } from '../../services/project';
+import QuestionModal from './QuestionModal';
 
 interface EditableTitleProps {
   title?: string;
@@ -388,6 +389,23 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
     }
   }, [customInput, onCustomSubmit]);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Show modal on mobile when new question arrives
+  useEffect(() => {
+    if (questionText && window.innerWidth <= 425) {
+      setIsModalOpen(true);
+    }
+  }, [questionText]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <div className={`w-full h-[75vh] flex justify-center ${className}`}>
       <div className="w-full max-w-4xl">
@@ -396,27 +414,61 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
             <EditableTitle title={projectTitle} onUpdate={onTitleUpdate} />
           </div>
           
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+          <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             <ChatContent
               messages={messages}
               isComplete={isComplete}
               imageBase64={imageBase64}
               onDownload={onDownload}
             />
+
           </div>
           
-          <QuestionSection
-            questionText={questionText}
-            options={options}
-            isComplete={isComplete}
-            customInput={customInput}
-            loading={loading}
-            onOptionSelect={onOptionSelect}
-            onCustomInputChange={onCustomInputChange}
-            validationResult={validationResult}
-            validationError={validationError}
-            isLocalValidating={isLocalValidating}
-            onSubmit={handleCustomSubmit}
+          {/* Desktop Question Section */}
+          <div className="hidden sm:block">
+            <QuestionSection
+              questionText={questionText}
+              options={options}
+              isComplete={isComplete}
+              customInput={customInput}
+              loading={loading}
+              onOptionSelect={onOptionSelect}
+              onCustomInputChange={onCustomInputChange}
+              validationResult={validationResult}
+              validationError={validationError}
+              isLocalValidating={isLocalValidating}
+              onSubmit={handleCustomSubmit}
+            />
+          </div>
+
+          {/* Mobile Question Button */}
+          {questionText && !isComplete && (
+            <div className="sm:hidden sticky bottom-0 px-2 py-2 rounded-b-lg text-center bg-white border-t border-gray-200">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="text-[#8c52ff] text-sm font-semibold"
+              >
+                Visit question
+              </button>
+            </div>
+          )}
+
+          {/* Mobile Question Modal */}
+          <QuestionModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            questionText={questionText || ''}
+            options={options || []}
+            customInput={customInput || ''}
+            onOptionSelect={(option) => {
+              onOptionSelect?.(option);
+              setIsModalOpen(false);
+            }}
+            onCustomInputChange={onCustomInputChange || (() => {})}
+            onCustomSubmit={() => {
+              handleCustomSubmit();
+              setIsModalOpen(false);
+            }}
           />
         </div>
       </div>

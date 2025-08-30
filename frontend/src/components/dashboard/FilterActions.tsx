@@ -4,6 +4,7 @@ import CategoryDropdown from './CategoryDropdown';
 import SortDropdown from './SortDropdown';
 import FavoritesToggle from './FavoritesToggle';
 import CreateNewButton from './CreateNewButton';
+import FilterMenu from './FilterMenu';
 import { useAuth } from '../../context/AuthContext';
 
 interface FilterActionsProps {
@@ -30,29 +31,44 @@ const FilterActions: React.FC<FilterActionsProps> = ({
   const { user } = useAuth();
   const freeProjectsRemaining = user?.project_quota?.free_projects_remaining ?? 0;
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center space-x-4">
+    <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mt-4 mb-8">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center w-full sm:w-auto">
         <SearchBar onSearch={onSearch} />
-        <CategoryDropdown 
-          selectedCategory={selectedCategory}
-          onCategoryChange={onCategoryChange}
-        />
-        <SortDropdown 
-          sortBy={sortBy}
-          onSortChange={onSortChange}
-        />
-        <FavoritesToggle 
-          showFavorites={showFavorites}
-          onToggle={onFavoritesToggle}
-        />
+        
+        {/* Grouped Filters (All Resolutions) */}
+        <div className="block">
+          <FilterMenu
+            selectedCategory={selectedCategory}
+            sortBy={sortBy}
+            showFavorites={showFavorites}
+            onCategoryChange={onCategoryChange}
+            onSortChange={onSortChange}
+            onFavoritesToggle={onFavoritesToggle}
+          />
+        </div>
+
+        {/* Expanded Filters (Hidden) */}
+        <div className="hidden items-center space-x-4">
+          <CategoryDropdown 
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+          />
+          <SortDropdown 
+            sortBy={sortBy}
+            onSortChange={onSortChange}
+          />
+          <FavoritesToggle 
+            showFavorites={showFavorites}
+            onToggle={onFavoritesToggle}
+          />
+        </div>
       </div>
 
-      <div className="flex items-center space-x-4">
-      <CreateNewButton 
-        onProjectCreated={onProjectCreated} 
-
-        freeProjectsRemaining={freeProjectsRemaining}
-      />
+      <div className="flex items-center">
+        <CreateNewButton 
+          onProjectCreated={onProjectCreated} 
+          freeProjectsRemaining={freeProjectsRemaining}
+        />
       </div>
     </div>
   );
