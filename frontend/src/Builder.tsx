@@ -274,8 +274,8 @@ const Builder: React.FC = () => {
   }, [projectId, isResetting, hasInitialized, messages.length, sendMessage]);
 
   return (
-    <div className="min-h-screen">
-      <div className="relative">
+    <>
+      <div className="min-h-screen flex flex-col">
         <DashboardHeader />
         
         <SubHeader 
@@ -285,54 +285,59 @@ const Builder: React.FC = () => {
           totalSteps={totalSteps}
         />
         
-        <div className="mt-5 pt-10 px-4 pb-4">
+        <main className="flex-1 px-4 pb-4" role="main" aria-label="Motorcycle Design Builder">
+          <h1 className="sr-only">Custom Motorcycle Design Builder</h1>
           <div className="max-w-7xl mx-auto">
-            <div className="w-full">
-            <ChatHistory 
-              messages={messages}
-              questionText={questionText}
-              options={options}
-              isComplete={isComplete}
-              customInput={customInput}
-              loading={loading}
-              onOptionSelect={handleOptionSelect}
-              onCustomInputChange={setCustomInput}
-              onCustomSubmit={handleCustomSubmit}
-              imageBase64={imageBase64}
-              onDownload={downloadImage}
-              projectTitle={projectTitle}
-              onTitleUpdate={handleTitleUpdate}
-            />
+            <section className="w-full" aria-label="Design Conversation">
+              <h2 className="sr-only">Design Conversation History</h2>
+              <ChatHistory 
+                messages={messages}
+                questionText={questionText}
+                options={options}
+                isComplete={isComplete}
+                customInput={customInput}
+                loading={loading}
+                onOptionSelect={handleOptionSelect}
+                onCustomInputChange={setCustomInput}
+                onCustomSubmit={handleCustomSubmit}
+                imageBase64={imageBase64}
+                onDownload={downloadImage}
+                projectTitle={projectTitle}
+                onTitleUpdate={handleTitleUpdate}
+              />
+            </section>
           </div>
-        </div>
-      </div>
+        </main>
       </div>
 
-      <ConfirmationModal
-        isOpen={showStartOverModal}
-        title="Start Over"
-        message="Are you sure you want to start over? All your progress and conversation history will be lost."
-        confirmText="Yes, Start Over"
-        cancelText="Cancel"
-        onConfirm={confirmStartOver}
-        onCancel={() => setShowStartOverModal(false)}
-        type="warning"
-      />
+      {/* Modals */}
+      <div aria-live="polite">
+        <ConfirmationModal
+          isOpen={showStartOverModal}
+          title="Start Over"
+          message="Are you sure you want to start over? All your progress and conversation history will be lost."
+          confirmText="Yes, Start Over"
+          cancelText="Cancel"
+          onConfirm={confirmStartOver}
+          onCancel={() => setShowStartOverModal(false)}
+          type="warning"
+        />
 
-      <ConfirmationModal
-        isOpen={showBackToDashboardModal}
-        title="Leave Builder"
-        message={projectId 
-          ? `Are you sure you want to leave? This will count towards your project quota and all progress will be lost.`
-          : "Are you sure you want to leave? All your progress will be lost."
-        }
-        confirmText={projectId ? "Yes, Leave & Count Quota" : "Yes, Leave"}
-        cancelText="Cancel"
-        onConfirm={confirmBackToDashboard}
-        onCancel={() => setShowBackToDashboardModal(false)}
-        type="warning"
-      />
-    </div>
+        <ConfirmationModal
+          isOpen={showBackToDashboardModal}
+          title="Leave Builder"
+          message={projectId 
+            ? `Are you sure you want to leave? This will count towards your project quota and all progress will be lost.`
+            : "Are you sure you want to leave? All your progress will be lost."
+          }
+          confirmText={projectId ? "Yes, Leave & Count Quota" : "Yes, Leave"}
+          cancelText="Cancel"
+          onConfirm={confirmBackToDashboard}
+          onCancel={() => setShowBackToDashboardModal(false)}
+          type="warning"
+        />
+      </div>
+    </>
   );
 };
 

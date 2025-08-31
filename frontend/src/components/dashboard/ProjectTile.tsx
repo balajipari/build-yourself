@@ -4,6 +4,8 @@ import { RiDownloadLine } from "react-icons/ri";
 import { TbTrash } from "react-icons/tb";
 import type { Project } from './types';
 import { DEFAULT_IMAGES } from '../../config/constants';
+import OptimizedImage from '../common/OptimizedImage';
+import { formatDate } from '../../utils/dateFormat';
 
 interface ProjectTileProps {
   project: Project;
@@ -49,13 +51,16 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 w-full">
+    <article className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 w-full">
       {/* Project Image with Heart Icon */}
       <div className="relative aspect-[4/3] md:aspect-[16/9] lg:aspect-square bg-gray-100">
-        <img 
+        <OptimizedImage 
           src={!project.image || imageError ? DEFAULT_IMAGES.BIKE_GRAFFITI : project.image} 
-          alt={project.name}
+          alt={`Custom motorcycle design: ${project.name}`}
           className="w-full h-full object-cover"
+          loading="lazy"
+          width={400}
+          height={400}
           onError={() => setImageError(true)}
         />
         
@@ -105,11 +110,21 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
       {/* Project Info - Name and Time on same line */}
       <div className="p-2 md:p-3 md:py-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-medium text-gray-900 truncate flex-1 text-sm md:text-base">{project.name}</h3>
-          <span className="text-xs md:text-sm text-gray-500 whitespace-nowrap">{project.lastUpdated}</span>
+          <h3 className="font-medium text-gray-900 truncate flex-1 text-sm md:text-base">
+            <span className="sr-only">Project name: </span>
+            {project.name}
+          </h3>
+          {project.lastUpdated && (
+            <time 
+              dateTime={formatDate(project.lastUpdated).iso}
+              className="text-xs md:text-sm text-gray-500 whitespace-nowrap"
+            >
+              {formatDate(project.lastUpdated).formatted}
+            </time>
+          )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

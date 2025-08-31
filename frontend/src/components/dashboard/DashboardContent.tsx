@@ -137,6 +137,7 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div className="relative min-h-screen">
+      <h1 className="sr-only">Dashboard - Your Motorcycle Designs</h1>
       <div className="flex flex-col lg:flex-col xl:flex-row gap-4 mt-4 lg:mt-10 px-4 py-4 mx-auto w-full lg:w-[95%]">
         {/* Left Ad Banner - Extra Large Desktop */}
         <div className="hidden xl:block w-[160px]">
@@ -159,10 +160,10 @@ const DashboardContent: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 px-2 lg:px-10">
-
-      {/* Filter Actions */}
-      <FilterActions
+        <main className="flex-1 min-w-0 px-2 lg:px-10">
+          <section aria-label="Project Filters">
+            <h2 className="sr-only">Project Filters and Actions</h2>
+            <FilterActions
         selectedCategory={selectedCategory}
         sortBy={sortBy}
         showFavorites={showFavorites}
@@ -173,10 +174,14 @@ const DashboardContent: React.FC = () => {
         onSearch={setSearchTerm}
       />
 
-      {/* Continue Working On */}
-      <DraftProjects projects={draftProjects} />
+          </section>
 
-      {/* Mobile Ad Banner - Between Sections */}
+          <section aria-label="Draft Projects">
+            <h2 className="sr-only">Continue Working On</h2>
+            <DraftProjects projects={draftProjects} />
+          </section>
+
+          {/* Mobile Ad Banner - Between Sections */}
       <div className="lg:hidden w-full my-6">
         <div className="bg-gray-100 rounded-lg h-[120px] overflow-hidden">
           <AdSense
@@ -186,27 +191,28 @@ const DashboardContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Your Creations */}
-      {isLoading ? (
-        <div className="text-center py-8">
-          <div className="text-gray-600">Loading projects...</div>
-        </div>
-      ) : filteredProjects.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-4">
-            {apiProjects.length === 0 ? (
-              <>
-                <p className="mb-2">No projects found.</p>
-              </>
+          <section aria-label="All Projects">
+            <h2 className="sr-only">Your Creations</h2>
+            {isLoading ? (
+              <div className="text-center py-8" role="status" aria-live="polite">
+                <div className="text-gray-600">Loading projects...</div>
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="text-center py-12" role="status" aria-live="polite">
+                <div className="text-gray-500 text-lg mb-4">
+                  {apiProjects.length === 0 ? (
+                    <>
+                      <p className="mb-2">No projects found.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>Try adjusting your search criteria or create a new project.</p>
+                    </>
+                  )}
+                </div>
+              </div>
             ) : (
-              <>
-                <p>Try adjusting your search criteria or create a new project.</p>
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <AllProjects
+              <AllProjects
           projects={filteredProjects}
           favorites={favorites}
           onFavoriteToggle={handleFavoriteToggle}
@@ -214,18 +220,19 @@ const DashboardContent: React.FC = () => {
           onDelete={handleDelete}
         />
       )}
-          {/* Mobile Ad Banner - After Cards */}
-          {!isLoading && filteredProjects.length > 0 && (
-            <div className="lg:hidden w-full mt-8">
-              <div className="bg-gray-100 rounded-lg h-[120px] overflow-hidden">
-                <AdSense
-                  adSlot="7678234258"
-                  style={{ display: 'block', height: '100%', width: '100%' }}
-                />
+            {/* Mobile Ad Banner - After Cards */}
+            {!isLoading && filteredProjects.length > 0 && (
+              <div className="lg:hidden w-full mt-8">
+                <div className="bg-gray-100 rounded-lg h-[120px] overflow-hidden">
+                  <AdSense
+                    adSlot="7678234258"
+                    style={{ display: 'block', height: '100%', width: '100%' }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </section>
+        </main>
 
         {/* Right Ad Banner - Extra Large Desktop */}
         <div className="hidden xl:block w-[160px]">

@@ -37,7 +37,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const DEFAULT_IMAGES = {
-  BIKE_GRAFFITI: 'https://placehold.co/600x400/e2e8f0/475569?text=My+Dream+Bike',
+  BIKE_GRAFFITI: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTJlOGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzQ3NTU2OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk15IERyZWFtIEJpa2U8L3RleHQ+PC9zdmc+',
 } as const;
 
 export const FRONTEND_URLS = {

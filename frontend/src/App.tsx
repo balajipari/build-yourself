@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { HelmetProvider } from 'react-helmet-async';
 import FeedbackButton from './components/common/FeedbackButton';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Builder from './Builder';
@@ -7,9 +8,13 @@ import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
 import GoogleCallback from './components/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import SEO from './components/common/SEO';
+import { useAnalytics } from './hooks/useAnalytics';
+import { initAllPerformanceTracking } from './utils/performance';
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  useAnalytics(); // Track page views
 
   return (
     <Routes>
@@ -40,13 +45,20 @@ const AppRoutes: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // Initialize performance tracking
+    initAllPerformanceTracking();
+  }, []);
+
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-grid-pattern">
-          <AppRoutes />
-          <FeedbackButton />
-          <Toaster
+    <HelmetProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-grid-pattern">
+            <SEO />
+            <AppRoutes />
+            <FeedbackButton />
+            <Toaster
             position="top-right"
             toastOptions={{
               style: {
@@ -73,8 +85,9 @@ const App: React.FC = () => {
             }}
           />
         </div>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </HelmetProvider>
   );
 };
 

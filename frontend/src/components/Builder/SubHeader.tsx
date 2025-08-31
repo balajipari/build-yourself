@@ -10,15 +10,15 @@ interface SubHeaderProps {
 
 const SubHeader: React.FC<SubHeaderProps> = ({ onBackToDashboard, onStartOver, currentStep, totalSteps }) => {
   return (
-    <div className="sticky top-20 z-10">
+    <div className="relative py-2">
       <div className="max-w-7xl mx-auto px-4">
         <div>
           {/* Mobile Layout (< 768px) */}
           <div className="md:hidden">
-            <div className="flex items-center justify-between py-2 px-1 border-b border-gray-100">
+            <div className="flex items-center justify-between py-2 px-0.5 border-b border-gray-100">
               <button
                 onClick={onBackToDashboard}
-                className="flex items-center gap-1.5 text-sm text-gray-600 font-semibold cursor-pointer hover:text-[#8c52ff]"
+                className="flex items-center gap-1 text-sm text-gray-600 font-semibold cursor-pointer hover:text-[#8c52ff]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

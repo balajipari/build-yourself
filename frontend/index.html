@@ -3,10 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>build-it-yourself</title>
+    <meta name="theme-color" content="#8c52ff" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+        send_page_view: false, // We'll handle this manually
+        cookie_flags: 'SameSite=None;Secure'
+      });
+    </script>
+    <title>Build it Yourself - AI-Powered Custom Motorcycle Designer</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Design your dream motorcycle with AI assistance. Create custom bikes with professional guidance and real-time visualization." />
+    <meta name="keywords" content="custom motorcycle design, AI bike builder, motorcycle customization, dream bike creator, bike design tool" />
+    <meta name="author" content="Build it Yourself" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Build it Yourself - AI-Powered Motorcycle Designer" />
+    <meta property="og:description" content="Create your perfect custom motorcycle with AI guidance" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buildityourself.com" />
+    <meta property="og:image" content="/assets/og-image.jpg" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Build it Yourself - AI-Powered Motorcycle Designer" />
+    <meta name="twitter:description" content="Create your perfect custom motorcycle with AI guidance" />
+    <meta name="twitter:image" content="/assets/og-image.jpg" />
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Build it Yourself",
+      "description": "AI-powered motorcycle design platform",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "AI-powered design assistance",
+        "Real-time visualization",
+        "Professional guidance",
+        "Custom motorcycle design"
+      ]
+    }
+    </script>
+    
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
