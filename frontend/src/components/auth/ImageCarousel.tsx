@@ -52,7 +52,7 @@ const ImageCarousel: React.FC = () => {
   };
 
   return (
-    <div className="relative h-full flex items-center justify-center">
+    <div className="h-full">
       {/* Main Image */}
       <div className="relative w-full h-full">
         <img
@@ -62,12 +62,12 @@ const ImageCarousel: React.FC = () => {
         />
         
         {/* Overlay with text */}
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="text-center text-white px-8">
-            <h1 className="text-4xl font-bold mb-4">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-black px-4 sm:px-8 max-w-[90%] sm:max-w-2xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
               {carouselImages[currentImageIndex].title}
             </h1>
-            <p className="text-xl max-w-md">
+            <p className="text-base sm:text-lg md:text-xl opacity-90 max-w-md sm:max-w-xl mx-auto">
               {carouselImages[currentImageIndex].description}
             </p>
           </div>
@@ -82,8 +82,8 @@ const ImageCarousel: React.FC = () => {
             onClick={() => goToImage(index)}
             className={`w-3 h-3 rounded-full transition-all duration-200 ${
               index === currentImageIndex 
-                ? 'bg-white' 
-                : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                ? 'bg-black' 
+                : 'bg-black bg-opacity-50 hover:bg-opacity-75'
             }`}
           />
         ))}
