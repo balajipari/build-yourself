@@ -8,6 +8,7 @@ import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
 import GoogleCallback from './components/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { VehicleProvider } from './context/VehicleContext';
 import SEO from './components/common/SEO';
 import { useAnalytics } from './hooks/useAnalytics';
 import { initAllPerformanceTracking } from './utils/performance';
@@ -53,9 +54,10 @@ const App: React.FC = () => {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-grid-pattern">
-            <SEO />
+        <VehicleProvider>
+          <Router>
+            <div className="min-h-screen bg-grid-pattern">
+              <SEO />
             <AppRoutes />
             <FeedbackButton />
             <Toaster
@@ -85,7 +87,8 @@ const App: React.FC = () => {
             }}
           />
         </div>
-        </Router>
+          </Router>
+        </VehicleProvider>
       </AuthProvider>
     </HelmetProvider>
   );

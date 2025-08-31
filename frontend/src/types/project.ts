@@ -18,16 +18,12 @@ export interface ConversationMessage {
   timestamp?: string;
 }
 
-export enum ProjectStatus {
-  DRAFT = 'DRAFT',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED'
-}
+export type ProjectStatus = 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
 
 export interface ProjectCreateSimple {
-  /** Simplified project creation - only requires project type */
+  /** Simplified project creation - requires project type and vehicle type */
   project_type: string;
+  vehicle_type: 'bike' | 'car';
 }
 
 export interface ProjectUpdate {
@@ -42,6 +38,7 @@ export interface ProjectUpdate {
 export interface ProjectSearchParams {
   search_key?: string;
   category?: string;
+  vehicle_type?: 'bike' | 'car';
   status?: ProjectStatus;
   is_favorite?: boolean;
   sort_by: 'created_at' | 'name' | 'updated_at' | 'status';

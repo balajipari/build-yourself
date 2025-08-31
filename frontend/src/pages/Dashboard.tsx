@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
       />
       <DashboardHeader />
       
-      <main className="pt-10">
+      <main className="">
         <DashboardContent />
       </main>
     </div>

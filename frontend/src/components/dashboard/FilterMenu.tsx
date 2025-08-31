@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import { FaFilter } from 'react-icons/fa';
-import CategoryDropdown from './CategoryDropdown';
 import SortDropdown from './SortDropdown';
 import FavoritesToggle from './FavoritesToggle';
 
 interface FilterMenuProps {
-  selectedCategory: string;
   sortBy: string;
   showFavorites: boolean;
-  onCategoryChange: (category: string) => void;
   onSortChange: (sort: string) => void;
   onFavoritesToggle: () => void;
 }
 
 const FilterMenu: React.FC<FilterMenuProps> = ({
-  selectedCategory,
   sortBy,
   showFavorites,
-  onCategoryChange,
   onSortChange,
   onFavoritesToggle,
 }) => {
@@ -36,24 +31,14 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/20 z-10"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Dropdown */}
           <div className="absolute left-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200/50 p-5 z-20">
             <div className="space-y-5">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2.5 block">Category</label>
-                <CategoryDropdown
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={(category) => {
-                    onCategoryChange(category);
-                    setIsOpen(false);
-                  }}
-                />
-              </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2.5 block">Sort By</label>
                 <SortDropdown

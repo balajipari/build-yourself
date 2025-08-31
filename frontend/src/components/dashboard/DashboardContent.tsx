@@ -7,9 +7,10 @@ import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
 import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
 import toast from 'react-hot-toast';
+import { useVehicle } from '../../context/VehicleContext';
 
 const DashboardContent: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const { vehicleType } = useVehicle();
   const [sortBy, setSortBy] = useState('date-desc');
   const [showFavorites, setShowFavorites] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +20,7 @@ const DashboardContent: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, [selectedCategory, sortBy, showFavorites, searchTerm]);
+  }, [sortBy, showFavorites, searchTerm, vehicleType]);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -30,7 +31,7 @@ const DashboardContent: React.FC = () => {
       
       const response = await projectService.getProjects({
         search_key: searchTerm,
-        category: selectedCategory === 'all' ? '' : selectedCategory,
+        vehicle_type: vehicleType,
         status: undefined,
         is_favorite: showFavorites ? true : undefined,
         sort_by: sortByField,
@@ -50,7 +51,7 @@ const DashboardContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [sortBy, searchTerm, selectedCategory, showFavorites]);
+  }, [sortBy, searchTerm, showFavorites, vehicleType]);
 
 
   const handleFavoriteToggle = useCallback(async (projectId: string) => {
@@ -122,7 +123,6 @@ const DashboardContent: React.FC = () => {
     const filtered = apiProjects
       .filter(project => {
         if (showFavorites && !favorites.includes(project.id)) return false;
-        if (selectedCategory !== 'all' && project.project_type !== selectedCategory) return false;
         if (project.status === 'DRAFT') return false;
         return true;
       })
@@ -133,12 +133,12 @@ const DashboardContent: React.FC = () => {
       .map(mapToInProgressProject);
 
     return { filteredProjects: filtered, draftProjects: drafts };
-  }, [apiProjects, showFavorites, favorites, selectedCategory]);
+  }, [apiProjects, showFavorites, favorites]);
 
   return (
     <div className="relative min-h-screen">
       <h1 className="sr-only">Dashboard - Your Motorcycle Designs</h1>
-      <div className="flex flex-col lg:flex-col xl:flex-row gap-4 mt-4 lg:mt-10 px-4 py-4 mx-auto w-full lg:w-[95%]">
+      <div className="flex flex-col lg:flex-col xl:flex-row gap-4 mt-4 px-4 py-4 mx-auto w-full lg:w-[95%]">
         {/* Left Ad Banner - Extra Large Desktop */}
         <div className="hidden xl:block w-[160px]">
           <div className="sticky top-4 bg-gray-100 rounded-lg h-[600px] overflow-hidden">
@@ -164,15 +164,13 @@ const DashboardContent: React.FC = () => {
           <section aria-label="Project Filters">
             <h2 className="sr-only">Project Filters and Actions</h2>
             <FilterActions
-        selectedCategory={selectedCategory}
-        sortBy={sortBy}
-        showFavorites={showFavorites}
-        onCategoryChange={setSelectedCategory}
-        onSortChange={setSortBy}
-        onFavoritesToggle={() => setShowFavorites(!showFavorites)}
-        onProjectCreated={fetchProjects}
-        onSearch={setSearchTerm}
-      />
+              sortBy={sortBy}
+              showFavorites={showFavorites}
+              onSortChange={setSortBy}
+              onFavoritesToggle={() => setShowFavorites(!showFavorites)}
+              onProjectCreated={fetchProjects}
+              onSearch={setSearchTerm}
+            />
 
           </section>
 
