@@ -46,7 +46,7 @@ class ProjectService {
       
       if (searchParams.search_key) queryParams.append('search_key', searchParams.search_key);
       if (searchParams.category) queryParams.append('category', searchParams.category);
-      if (searchParams.vehicle_type) queryParams.append('vehicle_type', searchParams.vehicle_type);
+      if (searchParams.project_type) queryParams.append('project_type', searchParams.project_type);
       if (searchParams.status) queryParams.append('status', searchParams.status);
       if (searchParams.is_favorite !== undefined) queryParams.append('is_favorite', searchParams.is_favorite.toString());
       if (searchParams.sort_by) queryParams.append('sort_by', searchParams.sort_by);

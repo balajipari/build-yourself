@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BsStars } from 'react-icons/bs';
-import { useVehicle } from '../../context/VehicleContext';
+import { useProject } from '../../context/ProjectContext';
 import { projectService } from '../../services/project';
 import { paymentService } from '../../services/payment';
 import { useAuth } from '../../context/AuthContext';
@@ -23,7 +23,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
   const [isCreating, setIsCreating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { vehicleType } = useVehicle();
+  const { projectType } = useProject();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,8 +43,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
 
       // Create project first
       const project = await projectService.createProject({
-        project_type: type,
-        vehicle_type: vehicleType
+        project_type: projectType
       });
 
       // Navigate to builder with the new project ID
@@ -117,9 +116,9 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
             <button
               key={option.id}
               onClick={option.onClick}
-              disabled={option.disabled || vehicleType === 'car' || isCreating}
+              disabled={option.disabled || projectType === 'car' || isCreating}
               className={`w-full pr-2 pl-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center justify-between ${
-                option.disabled || vehicleType === 'car' || isCreating ? 'opacity-60 cursor-not-allowed' : ''
+                option.disabled || projectType === 'car' || isCreating ? 'opacity-60 cursor-not-allowed' : ''
               }`}
             >
               <div className="flex text-sm items-center gap-1">

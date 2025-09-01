@@ -74,10 +74,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={alignment}>
       <div className="text-xs font-semibold text-gray-600 mb-2 opacity-75">
-        {isUser ? 'You' : 'AI Assistant'}
+        {isUser ? 'You' : 'AI Mechanic'}
       </div>
       
-      <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${bubbleStyle}`}>
+      <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow ${bubbleStyle}`}>
         <div className="text-sm whitespace-pre-wrap">{message.content}</div>
       </div>
     </div>
@@ -132,7 +132,7 @@ const OptionButton: React.FC<{
     key={option.number}
     onClick={onSelect}
     disabled={disabled}
-    className="px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+    className="px-4 py-1.5 bg-white shadow border border-gray-200 rounded-full hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
   >
     <span className="text-gray-700">{option.text}</span>
   </button>

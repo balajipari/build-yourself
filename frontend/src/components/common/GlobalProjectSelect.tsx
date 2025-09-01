@@ -2,23 +2,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { FaChevronDown } from 'react-icons/fa';
 
-export type VehicleType = 'bike' | 'car';
+export type ProjectType = 'bike' | 'car';
 
-interface GlobalVehicleSelectProps {
-  onChange: (type: VehicleType) => void;
+interface GlobalProjectSelectProps {
+  onChange: (type: ProjectType) => void;
 }
 
-const GlobalVehicleSelect: React.FC<GlobalVehicleSelectProps> = ({ onChange }) => {
-  const [selectedType, setSelectedType] = useState<VehicleType>(() => {
-    const saved = localStorage.getItem('selectedVehicleType');
-    return (saved as VehicleType) || 'bike';
+const GlobalProjectSelect: React.FC<GlobalProjectSelectProps> = ({ onChange }) => {
+  const [selectedType, setSelectedType] = useState<ProjectType>(() => {
+    const saved = localStorage.getItem('selectedProjectType');
+    return (saved as ProjectType) || 'bike';
   });
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    localStorage.setItem('selectedVehicleType', selectedType);
+    localStorage.setItem('selectedProjectType', selectedType);
     onChange(selectedType);
   }, [selectedType, onChange]);
 
@@ -33,7 +33,7 @@ const GlobalVehicleSelect: React.FC<GlobalVehicleSelectProps> = ({ onChange }) =
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (type: VehicleType) => {
+  const handleSelect = (type: ProjectType) => {
     if (type === 'car') return; // Car is disabled
     setSelectedType(type);
     setIsOpen(false);
@@ -89,4 +89,4 @@ const GlobalVehicleSelect: React.FC<GlobalVehicleSelectProps> = ({ onChange }) =
   );
 };
 
-export default GlobalVehicleSelect;
+export default GlobalProjectSelect;

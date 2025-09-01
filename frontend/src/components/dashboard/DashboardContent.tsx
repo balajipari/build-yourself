@@ -7,10 +7,10 @@ import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
 import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
 import toast from 'react-hot-toast';
-import { useVehicle } from '../../context/VehicleContext';
+import { useProject } from '../../context/ProjectContext';
 
 const DashboardContent: React.FC = () => {
-  const { vehicleType } = useVehicle();
+  const { projectType } = useProject();
   const [sortBy, setSortBy] = useState('date-desc');
   const [showFavorites, setShowFavorites] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,7 +20,7 @@ const DashboardContent: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, [sortBy, showFavorites, searchTerm, vehicleType]);
+  }, [sortBy, showFavorites, searchTerm, projectType]);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -31,7 +31,7 @@ const DashboardContent: React.FC = () => {
       
       const response = await projectService.getProjects({
         search_key: searchTerm,
-        vehicle_type: vehicleType,
+        project_type: projectType,
         status: undefined,
         is_favorite: showFavorites ? true : undefined,
         sort_by: sortByField,
@@ -51,7 +51,7 @@ const DashboardContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [sortBy, searchTerm, showFavorites, vehicleType]);
+  }, [sortBy, searchTerm, showFavorites, projectType]);
 
 
   const handleFavoriteToggle = useCallback(async (projectId: string) => {

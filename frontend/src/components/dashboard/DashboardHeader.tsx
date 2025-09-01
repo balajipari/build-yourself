@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import BrandLogo from './BrandLogo';
 import ProfileSection from './ProfileSection';
-import GlobalVehicleSelect from '../common/GlobalVehicleSelect';
-import { useVehicle } from '../../context/VehicleContext';
+import GlobalProjectSelect from '../common/GlobalProjectSelect';
+import { useProject } from '../../context/ProjectContext';
 
 
 const DashboardHeader: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, logout } = useAuth();
-  const { setVehicleType } = useVehicle();
+  const { setProjectType } = useProject();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -40,7 +40,7 @@ const DashboardHeader: React.FC = () => {
         <BrandLogo />
         
         <div className="flex items-center gap-4">
-          <GlobalVehicleSelect onChange={(type) => setVehicleType(type)} />
+          <GlobalProjectSelect onChange={(type) => setProjectType(type)} />
           <ProfileSection 
           user={user}
           isDropdownOpen={isDropdownOpen}
