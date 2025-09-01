@@ -39,22 +39,23 @@ RUN pip install --no-cache-dir \
     mypy \
     pre-commit
 
+# Copy entrypoint script first and set permissions
+COPY scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Copy application code
 COPY . .
 
 # Create non-root user for security
 RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app
+    && chown -R appuser:appuser /app \
+    && chown appuser:appuser /entrypoint.sh
+
+# Switch to non-root user
 USER appuser
 
 # Expose port
 EXPOSE 5000
-
-# Copy and set permissions for entrypoint script
-COPY scripts/entrypoint.sh /entrypoint.sh
-USER root
-RUN chmod +x /entrypoint.sh
-USER appuser
 
 # Run the entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]

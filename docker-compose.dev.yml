@@ -1,21 +1,20 @@
 version: '3.8'
 
 services:
-    nginx:
+  nginx:
     image: nginx:alpine
     container_name: build_yourself_nginx_dev
     ports:
       - "80:80"
-      - "443:443" 
     volumes:
-      - ./frontend/dist:/usr/share/nginx/html 
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/conf.d/default.dev.conf:/etc/nginx/conf.d/default.conf
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Required for Windows/Mac to access host
     depends_on:
       - backend
     networks:
       - build_yourself_network_dev
-  # PostgreSQL Database
+
   postgres:
     image: postgres:15-alpine
     container_name: build_yourself_db_dev
@@ -38,7 +37,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # Redis for development
   redis:
     image: redis:7-alpine
     container_name: build_yourself_redis_dev
@@ -55,17 +53,15 @@ services:
       timeout: 10s
       retries: 3
 
-  # Backend API (Development)
   backend:
     build:
       context: ./backend
       dockerfile: dockerfile
-    container_name: build_yourself_api
+    container_name: build_yourself_api_dev
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      # Override any specific variables if needed
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       - REDIS_URL=redis://redis:6379
     volumes:
@@ -84,7 +80,6 @@ services:
         condition: service_healthy
     networks:
       - build_yourself_network_dev
-    # The entrypoint script will handle migrations and start the app
 
 volumes:
   postgres_data_dev:
