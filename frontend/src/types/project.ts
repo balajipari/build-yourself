@@ -8,8 +8,7 @@ export interface Project {
   configuration?: Record<string, any>;
   image_base64?: string;
   conversation_history?: ConversationMessage[];
-  created_at: string;
-  updated_at: string;
+  lastUpdated: string;
 }
 
 export interface ConversationMessage {

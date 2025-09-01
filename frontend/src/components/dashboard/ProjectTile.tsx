@@ -114,14 +114,9 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
             <span className="sr-only">Project name: </span>
             {project.name}
           </h3>
-          {project.lastUpdated && (
-            <time 
-              dateTime={formatDate(project.lastUpdated).iso}
-              className="text-xs md:text-sm text-gray-500 whitespace-nowrap"
-            >
-              {formatDate(project.lastUpdated).formatted}
-            </time>
-          )}
+          <span className="text-sm md:text text-gray-500 whitespace-nowrap px-3">
+            {project.lastUpdated}
+          </span>
         </div>
       </div>
     </article>
