@@ -5,6 +5,7 @@ import type { ProjectSearch } from '../../types/project';
 import FilterActions from './FilterActions';
 import DraftProjects from './DraftProjects';
 import AllProjects from './AllProjects';
+import Pagination from '../common/Pagination';
 import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
 import toast from 'react-hot-toast';
 import { useProject } from '../../context/ProjectContext';
@@ -17,10 +18,13 @@ const DashboardContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiProjects, setApiProjects] = useState<ProjectSearch[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     fetchProjects();
-  }, [sortBy, showFavorites, searchTerm, projectType]);
+  }, [sortBy, showFavorites, searchTerm, projectType, currentPage, pageSize]);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -36,9 +40,14 @@ const DashboardContent: React.FC = () => {
         is_favorite: showFavorites ? true : undefined,
         sort_by: sortByField,
         sort_order: sortOrder,
-        page: 1,
-        page_size: 50,
+        page: currentPage,
+        page_size: pageSize,
       });
+      
+      // Sync pagination state with API response
+      setTotalPages(response.total_pages);
+      setCurrentPage(response.page);
+      setPageSize(response.page_size);
       setApiProjects(response.items);
       
       // Set favorites based on the is_favorite flag from the API response
@@ -51,7 +60,7 @@ const DashboardContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [sortBy, searchTerm, showFavorites, projectType]);
+  }, [sortBy, searchTerm, showFavorites, projectType, currentPage, pageSize]);
 
 
   const handleFavoriteToggle = useCallback(async (projectId: string) => {
@@ -191,33 +200,48 @@ const DashboardContent: React.FC = () => {
 
           <section aria-label="All Projects">
             <h2 className="sr-only">Your Creations</h2>
-            {isLoading ? (
-              <div className="text-center py-8" role="status" aria-live="polite">
-                <div className="text-gray-600">Loading projects...</div>
+            <div className="min-h-[calc(100vh-400px)] flex flex-col">
+              <div className="flex-grow">
+                {isLoading ? (
+                  <div className="text-center py-8" role="status" aria-live="polite">
+                    <div className="text-gray-600">Loading projects...</div>
+                  </div>
+                ) : (
+                  <>
+                    {filteredProjects.length === 0 ? (
+                      <div className="text-center py-12" role="status" aria-live="polite">
+                        <div className="text-gray-500 text-lg mb-4">
+                          {apiProjects.length === 0 ? (
+                            <>
+                              <p className="mb-2">No projects found.</p>
+                            </>
+                          ) : (
+                            <>
+                              <p>Try adjusting your search criteria or create a new project.</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <AllProjects
+                        projects={filteredProjects}
+                        favorites={favorites}
+                        onFavoriteToggle={handleFavoriteToggle}
+                        onDownload={handleDownload}
+                        onDelete={handleDelete}
+                      />
+                    )}
+                  </>
+                )}
               </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="text-center py-12" role="status" aria-live="polite">
-                <div className="text-gray-500 text-lg mb-4">
-                  {apiProjects.length === 0 ? (
-                    <>
-                      <p className="mb-2">No projects found.</p>
-                    </>
-                  ) : (
-                    <>
-                      <p>Try adjusting your search criteria or create a new project.</p>
-                    </>
-                  )}
-                </div>
+              <div className="mt-auto pt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.max(1, totalPages)}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
               </div>
-            ) : (
-              <AllProjects
-          projects={filteredProjects}
-          favorites={favorites}
-          onFavoriteToggle={handleFavoriteToggle}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-        />
-      )}
+            </div>
             {/* Mobile Ad Banner - After Cards */}
             {!isLoading && filteredProjects.length > 0 && (
               <div className="lg:hidden w-full mt-8">
