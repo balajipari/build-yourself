@@ -48,9 +48,19 @@ class UserService:
             )
             
             self.db.add(user)
-            
             self.db.commit()
             self.db.refresh(user)
+
+            # Initialize project quota with free credits
+            quota_service = ProjectQuotaService(self.db)
+            quota = quota_service.get_user_quota(user.id)
+
+            # Add initial free credits (2) as a recharge transaction
+            quota_service.add_credits(
+                user_id=user.id,
+                amount=2,  # Initial free credits
+                description="Initial free credits"
+            )
             
             return user
         except Exception as e:
@@ -71,6 +81,19 @@ class UserService:
                     existing_user.google_id = user_data.google_id
                     self.db.commit()
                     self.db.refresh(existing_user)
+
+                # Check if user has a project quota
+                quota_service = ProjectQuotaService(self.db)
+                quota = quota_service.get_user_quota(existing_user.id)
+
+                # If no credits, add initial free credits
+                if quota.credits == 0:
+                    quota_service.add_credits(
+                        user_id=existing_user.id,
+                        amount=2,  # Initial free credits
+                        description="Initial free credits"
+                    )
+
                 return existing_user
             
             # Create new user if not found

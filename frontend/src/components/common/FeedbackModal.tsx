@@ -64,7 +64,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
       overlayClassName="fixed inset-0 bg-black/30 flex items-center justify-center p-4"
     >
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">Share Your Thoughts</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Give us feedback</h2>
         
         <div className="flex flex-wrap gap-2">
           {SUGGESTION_TAGS.map(tag => (

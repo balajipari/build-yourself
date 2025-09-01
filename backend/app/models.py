@@ -26,6 +26,17 @@ class ProjectStatus(enum.Enum):
     ARCHIVED = "ARCHIVED"
 
 
+class CreditTransactionType(enum.Enum):
+    DEDUCT = "DEDUCT"
+    REFUND = "REFUND"
+    RECHARGE = "RECHARGE"
+
+
+class CreditTransactionStatus(enum.Enum):
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+
+
 class User(Base):
     __tablename__ = "users"
     
@@ -43,6 +54,7 @@ class User(Base):
     favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
     project_quota = relationship("ProjectQuota", back_populates="user", uselist=False)
     feedback = relationship("Feedback", back_populates="user", lazy="dynamic")
+    credit_transactions = relationship("CreditTransaction", back_populates="user", cascade="all, delete-orphan")
 
 
 class Project(Base):
@@ -63,6 +75,7 @@ class Project(Base):
     # Relationships
     user = relationship("User", back_populates="projects")
     favorites = relationship("UserFavorite", back_populates="project", cascade="all, delete-orphan")
+    credit_transactions = relationship("CreditTransaction", back_populates="project", cascade="all, delete-orphan")
 
     @property
     def is_favorite(self) -> bool:
@@ -101,15 +114,13 @@ class ProjectQuota(Base):
 
     @property
     def free_projects_remaining(self) -> int:
-        """Calculate remaining free projects"""
-        MAX_FREE_PROJECTS = 2
-        free_remaining = max(0, MAX_FREE_PROJECTS - self.completed_projects_count)
-        return free_remaining + self.credits
+        """Get remaining credits"""
+        return self.credits
 
     @property
     def has_free_projects(self) -> bool:
-        """Check if user has any free projects remaining"""
-        return self.free_projects_remaining > 0
+        """Check if user has any credits remaining"""
+        return self.credits > 0
 
     def add_credits(self, amount: int) -> None:
         """Add credits to the user's quota"""
@@ -169,3 +180,20 @@ class CreditPackage(Base):
     def get_price_in_currency(self, currency: Currency) -> float:
         """Get package price in specified currency"""
         return currency.convert_from_usd(self.base_price_usd)
+
+
+class CreditTransaction(Base):
+    __tablename__ = "credit_transactions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    amount = Column(Integer, nullable=False)
+    type = Column(ENUM(CreditTransactionType, name="credit_transaction_type"), nullable=False)
+    status = Column(ENUM(CreditTransactionStatus, name="credit_transaction_status"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    description = Column(String, nullable=True)
+
+    # Relationships
+    user = relationship("User", back_populates="credit_transactions")
+    project = relationship("Project", back_populates="credit_transactions")

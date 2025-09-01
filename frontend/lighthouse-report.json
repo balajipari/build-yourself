@@ -9338,7 +9338,7 @@
                 "height": 24
               },
               "snippet": "<span>",
-              "nodeLabel": "Share your thoughts",
+              "nodeLabel": "Give us feedback",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.4 (foreground color: #ffffff, background color: #8c52ff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
             "subItems": {
@@ -9359,7 +9359,7 @@
                       "height": 44
                     },
                     "snippet": "<button class=\"bg-[#8c52ff] text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-[#7440…\">",
-                    "nodeLabel": "Share your thoughts"
+                    "nodeLabel": "Give us feedback"
                   }
                 }
               ]

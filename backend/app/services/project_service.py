@@ -9,6 +9,7 @@ from uuid import UUID
 import json
 
 from ..models import Project, User, UserFavorite, ProjectStatus
+from .credit_transaction_service import CreditTransactionService
 from ..schemas import ProjectCreate, ProjectCreateSimple, ProjectUpdate, ProjectSearchParams, PaginatedResponse, ProjectSearchResponse
 
 
@@ -85,17 +86,50 @@ class ProjectService:
             raise Exception(f"Failed to create project: {str(e)}")
     
     def update_project_image(self, project_id: UUID, user_id: UUID, image_base64: str) -> Optional[Project]:
-        """Update project with generated image"""
+        """Update project with generated image and handle credit deduction"""
         try:
             project = self.get_project_by_id(project_id, user_id)
             if not project:
                 return None
-            
-            project.image_base64 = image_base64
-            self.db.commit()
-            self.db.refresh(project)
-            
-            return project
+
+            # Get user for credit transaction
+            user = self.db.query(User).filter(User.id == user_id).first()
+            if not user:
+                raise Exception("User not found")
+
+            # Initialize credit transaction service
+            credit_service = CreditTransactionService(self.db)
+
+            try:
+                # Deduct credits first
+                credit_service.deduct_credits(
+                    user=user,
+                    project=project,
+                    amount=1,
+                    description="Image generation"
+                )
+
+                try:
+                    # Attempt image generation (update image)
+                    project.image_base64 = image_base64
+                    self.db.commit()
+                    self.db.refresh(project)
+                    return project
+
+                except Exception as image_error:
+                    # If image generation fails, refund credits
+                    credit_service.refund_credits(
+                        user=user,
+                        project=project,
+                        amount=1,
+                        description="Image generation failed - refund"
+                    )
+                    raise image_error
+
+            except ValueError as credit_error:
+                # Handle insufficient credits error
+                raise Exception(str(credit_error))
+
         except Exception as e:
             self.db.rollback()
             raise Exception(f"Failed to update project image: {str(e)}")
@@ -204,7 +238,7 @@ class ProjectService:
                 from ..services.project_quota_service import ProjectQuotaService
                 from ..bike.utils import cleanup_session
                 quota_service = ProjectQuotaService(self.db)
-                quota_service.increment_completed_projects(user_id)
+                quota_service.increment_completed_projects(user_id, project_id)
                 cleanup_session(str(project_id))
             
             self.db.commit()

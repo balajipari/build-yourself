@@ -40,7 +40,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   }, [isDropdownOpen, onToggleDropdown]);
 
   return (
-    <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
+    <div className="flex items-center space-x-3 relative z-40" ref={dropdownRef}>
       <UserAvatar 
         user={user}
         isDropdownOpen={isDropdownOpen}

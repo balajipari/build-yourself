@@ -35,7 +35,7 @@ const DashboardHeader: React.FC = () => {
   };
 
   return (
-    <header className="relative bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200">
+    <header className="relative bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200 z-30">
       <div className="flex items-center justify-between py-3 px-4 lg:px-8 w-full xl:w-[80%] mx-auto">
         <BrandLogo />
         

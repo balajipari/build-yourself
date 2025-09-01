@@ -289,7 +289,7 @@ def fetch_project_conversations(project_id):
         db.close()
 
 @router.post("/image/generate", response_model=ImageGenerationResponse)
-def generate_image(request: ImageGenerationRequest):
+def generate_image(request: ImageGenerationRequest, db: Session = Depends(get_db)):
     client = get_openai_client()
     project_id = request.project_id
     
@@ -299,21 +299,54 @@ def generate_image(request: ImageGenerationRequest):
     bike_spec = bike_specs[project_id]
 
     try:
-        specs = bike_spec.get_image_generation_specs()
-        summary_prompt = create_image_prompt(specs)
+        # Get project and user
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
         
-        image_base64 = generate_bike_image(summary_prompt, client)
-        
-        file_path = save_image_to_file(image_base64, project_id)
-        image_files[project_id] = file_path
-        
-        # Save image to project if project_id is provided
-        if project_id:
-            try:
+        user = project.user
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Initialize credit transaction service
+        from app.services.credit_transaction_service import CreditTransactionService
+        credit_service = CreditTransactionService(db)
+
+        # Deduct credits first
+        try:
+            credit_service.deduct_credits(
+                user=user,
+                project=project,
+                amount=1,
+                description="Image generation"
+            )
+        except ValueError as e:
+            if "Insufficient credits" in str(e):
+                raise HTTPException(status_code=400, detail="Insufficient credits")
+            raise HTTPException(status_code=400, detail=str(e))
+
+        try:
+            # Generate image
+            specs = bike_spec.get_image_generation_specs()
+            summary_prompt = create_image_prompt(specs)
+            image_base64 = generate_bike_image(summary_prompt, client)
+            
+            # Save image
+            file_path = save_image_to_file(image_base64, project_id)
+            image_files[project_id] = file_path
+            
+            if project_id:
                 save_image_to_project(project_id, image_base64)
-            except Exception as e:
-                # Image saving failed, but continue with response
-                pass
+
+        except Exception as e:
+            # If image generation fails, refund credits
+            credit_service.refund_credits(
+                user=user,
+                project=project,
+                amount=1,
+                description="Image generation failed - refund"
+            )
+            raise e
         
         return ImageGenerationResponse(image_base64=image_base64)
     except Exception as e:
