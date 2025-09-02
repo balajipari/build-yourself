@@ -7,7 +7,7 @@ export const APP_CONFIG = {
 } as const;
 
 export const API_ENDPOINTS = {
-  BASE_URL: 'http://localhost:5000',
+  BASE_URL: import.meta.env.VITE_BACKEND_URL,
   CHAT: '/bike/chat/complete',
   IMAGE_GENERATE: '/bike/image/generate',
   IMAGE_DOWNLOAD: '/bike/image/download',
@@ -41,10 +41,10 @@ export const DEFAULT_IMAGES = {
 } as const;
 
 export const FRONTEND_URLS = {
-  BASE_URL: 'http://localhost:5173',
-  DASHBOARD: 'http://localhost:5173/dashboard',
-  SIGNIN: 'http://localhost:5173/signin',
-  CALLBACK: 'http://localhost:5173/auth/callback',
+  BASE_URL: import.meta.env.VITE_BACKEND_URL,
+  DASHBOARD: `${import.meta.env.VITE_FRONTEND_URL}/dashboard`,
+  SIGNIN: `${import.meta.env.VITE_FRONTEND_URL}/signin`,
+  CALLBACK: `${import.meta.env.VITE_FRONTEND_URL}/auth/callback`,
 } as const;
 
 export const STORAGE_KEYS = {

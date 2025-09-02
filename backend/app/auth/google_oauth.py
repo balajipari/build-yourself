@@ -20,7 +20,7 @@ SCOPES = [
 def _get_config():
     client_id = os.getenv("GOOGLE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI",)
     jwt_secret = os.getenv("JWT_SECRET", "your-secret-key")
     
     if not all([client_id, client_secret, redirect_uri]):

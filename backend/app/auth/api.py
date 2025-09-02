@@ -99,7 +99,7 @@ async def google_oauth_callback(code: str, state: str = None, db: Session = Depe
         jwt_token = generate_jwt_token_for_user(user_data)
         
         # Create redirect URL with complete auth data
-        frontend_url = os.getenv("FRONTEND_CALLBACK_URL", "http://localhost:5173/auth/callback")
+        frontend_url = os.getenv("FRONTEND_CALLBACK_URL")
         redirect_url = f"{frontend_url}?jwt_token={jwt_token}&access_token={result['access_token']}&refresh_token={result['refresh_token']}&user_email={user_data['email']}&user_name={user_data['full_name']}&user_id={user_data['id']}&is_new_user={user_data['is_new_user']}"
         
         print(f"Redirecting to frontend with complete auth data")
@@ -108,7 +108,7 @@ async def google_oauth_callback(code: str, state: str = None, db: Session = Depe
     except Exception as e:
         print(f"OAuth callback failed: {e}")
         # Redirect to frontend with error
-        error_url = os.getenv("FRONTEND_SIGNIN_URL", "http://localhost:5173/signin") + "?error=auth_failed"
+        error_url = os.getenv("FRONTEND_SIGNIN_URL") + "?error=auth_failed"
         return RedirectResponse(url=error_url, status_code=302)
 
 @router.post("/google/callback")

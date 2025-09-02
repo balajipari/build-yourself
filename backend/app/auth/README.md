@@ -267,10 +267,10 @@ const refreshToken = async () => {
 ```bash
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:5000/auth/callback
+GOOGLE_REDIRECT_URI={BACKEND_URL}/auth/callback
 JWT_SECRET=your_jwt_secret_key
-FRONTEND_CALLBACK_URL=http://localhost:5173/auth/callback
-FRONTEND_SIGNIN_URL=http://localhost:5173/signin
+FRONTEND_CALLBACK_URL={FRONTEND_URL}/auth/callback
+FRONTEND_SIGNIN_URL={FRONTEND_URL}/signin
 ```
 
 ## 🚨 Error Handling
