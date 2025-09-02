@@ -9,7 +9,7 @@ from .models import (
 from .utils import (
     get_openai_client, parse_llm_response, validate_custom_input,
     initialize_session, get_session_messages, track_custom_followup,
-    validate_custom_fields, create_image_prompt, save_image_to_file,
+    validate_custom_fields, create_image_prompt,
     generate_bike_image, session_store, image_files, bike_specs,
     validate_custom_message_for_image_generation
 )
@@ -330,11 +330,7 @@ def generate_image(request: ImageGenerationRequest, db: Session = Depends(get_db
             specs = bike_spec.get_image_generation_specs()
             summary_prompt = create_image_prompt(specs)
             image_base64 = generate_bike_image(summary_prompt, client)
-            
-            # Save image
-            file_path = save_image_to_file(image_base64, project_id)
-            image_files[project_id] = file_path
-            
+                        
             if project_id:
                 save_image_to_project(project_id, image_base64)
 
@@ -369,20 +365,6 @@ def generate_image(request: ImageGenerationRequest, db: Session = Depends(get_db
         # Generic error
         raise HTTPException(status_code=500, detail=f"Image generation failed: {error_message}")
 
-@router.get("/image/download/{project_id}")
-def download_image(project_id: str):
-    if project_id not in image_files:
-        raise HTTPException(status_code=404, detail="Image not found for this project.")
-    
-    file_path = image_files[project_id]
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Image file not found.")
-    
-    return FileResponse(
-        path=file_path,
-        filename=f"custom_bike_{project_id}.png",
-        media_type="image/png"
-    )
 
 @router.get("/image/download/project/{project_id}")
 def download_project_image(project_id: UUID, db: Session = Depends(get_db)):
