@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Builder from './Builder';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import GoogleCallback from './components/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -37,6 +39,10 @@ const AppRoutes: React.FC = () => {
         isAuthenticated ? <Builder /> : <Navigate to="/signin" replace />
       } />
       
+      {/* Public Legal Routes */}
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+
       {/* Default Route */}
       <Route path="/" element={
         isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/signin" replace />
