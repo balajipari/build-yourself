@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-    nginx:
-    image: nginx:alpine
-    container_name: build_yourself_nginx_dev
-    ports:
-      - "80:80"
-      - "443:443" 
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html 
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-    depends_on:
-      - backend
-    networks:
-      - build_yourself_network_dev
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
@@ -59,7 +45,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: build_yourself_api
     restart: unless-stopped
     env_file:

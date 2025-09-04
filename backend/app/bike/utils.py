@@ -107,29 +107,39 @@ def validate_custom_message_for_image_generation(custom_message: str, client) ->
     Returns a dict with validation result and suggestions.
     """
     validation_prompt = f"""
-    You are an AI content safety expert. Analyze this custom motorcycle description for potential content policy violations when used in AI image generation.
-    
+    You are an AI content safety expert with deep knowledge of motorcycle culture and design. Analyze this custom motorcycle description, focusing ONLY on truly harmful content while allowing creative expression.
+
     Custom Message: "{custom_message}"
     
-    Analyze for:
-    1. Violence, weapons, or dangerous content
-    2. Inappropriate or offensive language
-    3. Brand names or copyrighted content
-    4. Safety policy violations
+    ALLOW (examples):
+    1. Brand references (e.g., "Harley-style", "like a Ducati")
+    2. Aggressive styling (e.g., "menacing look", "aggressive stance")
+    3. Cultural references (e.g., "Mad Max inspired", "military style")
+    4. Technical terms and jargon
+    5. Experimental and creative descriptions
+    
+    ANALYZE ONLY FOR:
+    1. Explicit violence or gore
+    2. Hate speech or discriminatory content
+    3. Explicit adult content
+    4. Dangerous illegal modifications
     
     Respond in this exact JSON format:
     {{
         "is_safe": true/false,
         "violation_type": "none" or specific violation type,
         "risk_level": "low/medium/high",
-        "suggestions": ["safer alternative 1", "safer alternative 2", "safer alternative 3"],
-        "explanation": "Brief explanation of why it's safe or what makes it unsafe"
+        "creative_score": 1-10,
+        "suggestions": ["alternative 1", "alternative 2"],
+        "explanation": "Brief explanation focusing on HARMFUL content only, or praise creativity if safe",
+        "enhanced_prompt": "An enhanced version of the user's input that maintains their intent while being safe"
     }}
     
-    Examples of safer alternatives:
-    - Instead of "aggressive chopper" → "custom cruiser motorcycle"
-    - Instead of "battle-scarred" → "vintage style"
-    - Instead of "weapon-like" → "performance oriented"
+    IMPORTANT:
+    - Default to allowing content unless clearly harmful
+    - Preserve user's creative intent
+    - Don't flag common motorcycle culture terms
+    - Focus on real safety issues, not style preferences
     """
     
     try:

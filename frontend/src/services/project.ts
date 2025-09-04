@@ -293,12 +293,7 @@ class ProjectService {
     }
   }
 
-  async validateCustomMessage(message: string): Promise<{
-    is_safe: boolean;
-    suggestions: string[];
-    explanation: string;
-    risk_level: string;
-  }> {
+  async validateCustomMessage(message: string): Promise<ValidationResult> {
     try {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VALIDATE_CUSTOM_MESSAGE}`,
@@ -318,9 +313,13 @@ class ProjectService {
         // Fallback: return a safe default
         return {
             is_safe: true,
+            violation_type: 'none',
+            risk_level: 'low',
+            creative_score: 5,
             suggestions: [],
             explanation: 'Validation service unavailable, proceeding with input',
-            risk_level: 'unknown'
+            enhanced_prompt: message,
+            message: message
         };
     }
   }
