@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import logo from '../../assets/logo.png';
+import image1 from '../../assets/image-1.png';
+import image2 from '../../assets/image-2.png';
 
 interface CarouselImage {
   id: number;
@@ -11,25 +14,24 @@ interface CarouselImage {
 const ImageCarousel: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Sample carousel images - replace with your actual product images
   const carouselImages: CarouselImage[] = [
     {
       id: 1,
-      src: '/assets/logo.png',
+      src: logo, 
       alt: 'Professional motorcycle design interface showing custom bike creation',
       title: 'Transform Your Dream Bike into Reality',
       description: 'Experience the future of motorcycle design with our AI-powered customization platform'
     },
     {
       id: 2,
-      src: '/assets/image-2.png',
+      src: image2, 
       alt: 'AI-assisted motorcycle customization process demonstration',
       title: 'Expert Design at Your Fingertips',
       description: 'Get professional guidance and instant visualization of your custom motorcycle design'
     },
     {
       id: 3,
-      src: '/assets/image-1.png',
+      src: image1,
       alt: 'Showcase of various custom motorcycle designs from classic to modern',
       title: 'Your Vision, Our Expertise',
       description: 'Create anything from vintage cruisers to modern sport bikes with precision and ease'
@@ -59,16 +61,8 @@ const ImageCarousel: React.FC = () => {
           {/* Centered Image */}
           <div className="relative">
             <picture className="block w-80 h-80">
-              <source
-                srcSet={`${carouselImages[currentImageIndex].src.replace('.webp', '.avif')}`}
-                type="image/avif"
-              />
-              <source
-                srcSet={carouselImages[currentImageIndex].src}
-                type="image/webp"
-              />
               <img
-                src={carouselImages[currentImageIndex].src.replace('.webp', '.jpg')}
+                src={carouselImages[currentImageIndex].src} // Use the imported image source directly
                 alt={carouselImages[currentImageIndex].alt}
                 className="w-full h-full object-contain"
                 loading="eager"
