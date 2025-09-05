@@ -12,6 +12,8 @@ export interface QuestionData {
   current_step?: number;
   total_steps?: number;
   is_complete?: boolean;
+  is_multiselect?: boolean;
+  should_follow_anatomy?: boolean;
 }
 
 export interface BuilderState {
@@ -23,6 +25,8 @@ export interface BuilderState {
   currentStep: number;
   totalSteps: number;
   customInput: string;
+  selectedOptions: QuestionOption[];
+  isMultiselect: boolean;
 }
 
 export interface BuilderActions {
@@ -34,4 +38,6 @@ export interface BuilderActions {
   resetQuestionState: () => void;
   setQuestionState: (data: QuestionData) => void;
   updateMessages: (userContent: string | undefined, aiMessage: string) => void;
+  handleOptionSelect: (option: QuestionOption) => void;
+  handleContinue: () => void;
 }
