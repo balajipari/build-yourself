@@ -35,7 +35,7 @@ const SignInForm: React.FC = () => {
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-gray-300 border-t-[#4285f4] rounded-full animate-spin"></div>
           ) : (
-            <img src="./src/assets/google.svg" alt="Google" className="w-[18px] h-[18px]" />
+            <img src="./assets/google.svg" alt="Google" className="w-[18px] h-[18px]" />
           )}
           <span className="text-[14px] sm:text-[16px] font-medium text-[#3c4043]">
             {isLoading ? 'Connecting...' : 'Continue with Google'}

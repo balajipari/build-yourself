@@ -21,15 +21,6 @@ const AdSense: React.FC<AdSenseProps> = ({
 }) => {
   useEffect(() => {
     try {
-      // Load the AdSense script if it hasn't been loaded yet
-      if (!(window as any).adsbygoogle) {
-        const script = document.createElement('script');
-        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8965703417902528';
-        script.async = true;
-        script.crossOrigin = 'anonymous';
-        document.head.appendChild(script);
-      }
-
       // Push the ad when the component mounts
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (error) {
