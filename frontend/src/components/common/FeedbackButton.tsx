@@ -22,9 +22,9 @@ const FeedbackButton: React.FC = () => {
       <div className="fixed bottom-6 right-6 flex items-center gap-2 z-50">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-[#8c52ff] text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-[#7440e0] transition-colors duration-200 flex items-center gap-2"
+          className="cursor-pointer bg-[#8c52ff] text-sm font-semibold text-white px-3 py-2 rounded-full shadow-lg hover:bg-[#7440e0] transition-colors duration-200 flex items-center gap-2"
         >
-          <FaHandHoldingHeart className="w-5 h-5" />
+          <FaHandHoldingHeart className="w-4 h-4" />
           <span>Send us feedback</span>
         </button>
         <button

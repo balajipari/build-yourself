@@ -47,11 +47,11 @@ const DraftProjects = memo<DraftProjectsProps>(({ projects }) => {
 
   return (
     <div className="mb-12">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Continue Working On</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Continue Working On</h2>
       <div className="relative">
         <div className="absolute left-0 right-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent opacity-50" />
         <div className="flex overflow-x-auto pb-4 gap-4 snap-x snap-mandatory hide-scrollbar">
-          <div className="flex gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 w-full">
+          <div className="flex gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 w-full">
             {projects.map((project) => (
               <DraftCard
                 key={project.id}

@@ -60,18 +60,18 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
-      className="w-full max-w-lg rounded-xl bg-white p-6 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 outline-none"
-      overlayClassName="fixed inset-0 bg-black/30 flex items-center justify-center p-4"
+      className="w-full max-w-lg rounded-xl bg-white p-6 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 outline-none z-50"
+      overlayClassName="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-40"
     >
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">Send us feedback</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Send us feedback</h2>
         
         <div className="flex flex-wrap gap-2">
           {SUGGESTION_TAGS.map(tag => (
             <button
               key={tag}
               onClick={() => handleTagClick(tag)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 cursor-pointer ${
                 selectedTags.includes(tag)
                   ? 'bg-purple-600 text-white'
                   : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
@@ -92,14 +92,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-3 text-sm font-semibold py-1 text-gray-600 hover:text-gray-800 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1 bg-purple-600 font-semibold cursor-pointer text-sm text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
           </button>

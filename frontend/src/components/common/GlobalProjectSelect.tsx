@@ -54,18 +54,18 @@ const GlobalProjectSelect: React.FC<GlobalProjectSelectProps> = ({ onChange }) =
     return createPortal(
       <div 
         ref={dropdownRef}
-        className="bg-white rounded-md shadow-lg border border-gray-200 py-1"
+        className="bg-white rounded-md shadow border border-gray-200 py-1"
         style={dropdownStyles}
       >
         <button
           onClick={() => handleSelect('bike')}
-          className={`w-full text-left px-3 py-1.5 text-sm ${selectedType === 'bike' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
+          className={`w-full text-left px-3 py-1 text-sm ${selectedType === 'bike' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
         >
           Bike
         </button>
         <button
           disabled
-          className="w-full text-left px-3 py-1.5 text-sm text-gray-400 cursor-not-allowed"
+          className="w-full text-left px-3 py-1 text-sm text-gray-400 cursor-not-allowed"
         >
           Car
         </button>
@@ -79,7 +79,7 @@ const GlobalProjectSelect: React.FC<GlobalProjectSelectProps> = ({ onChange }) =
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none w-fit"
+        className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 focus:outline-none w-fit"
       >
         {selectedType === 'bike' ? 'Bike' : 'Car'}
         <FaChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />

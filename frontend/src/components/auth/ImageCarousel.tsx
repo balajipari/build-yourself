@@ -73,7 +73,7 @@ const ImageCarousel: React.FC = () => {
           
           {/* Text Content */}
           <article className="text-center text-black max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">
               {carouselImages[currentImageIndex].title}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-xl mx-auto">

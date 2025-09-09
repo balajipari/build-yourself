@@ -15,7 +15,7 @@ const SignIn: React.FC = () => {
             className="w-12 h-12 object-contain"
           />
           <div className="text-black">
-            <h1 className="text-xl font-bold leading-tight">
+            <h1 className="text-lg font-bold leading-tight">
               Build it Yourself
             </h1>
           </div>

@@ -24,10 +24,10 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div 
-      className="mr-1 w-12 h-12 bg-orange-700 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-500 transition-colors duration-200"
+      className="mr-1 w-10 h-10 bg-orange-700 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-500 transition-colors duration-200"
       onClick={onToggleDropdown}
     >
-      <span className="text-white text-lg font-semibold">{getUserInitials()}</span>
+      <span className="text-white font-semibold">{getUserInitials()}</span>
     </div>
   );
 };

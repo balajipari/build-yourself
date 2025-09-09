@@ -87,12 +87,12 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
       {freeProjectsRemaining > 0 ? (
         <div className="flex items-center gap-3">
           <div className="text-gray-500 font-medium text-center">
-            You have: <span className="font-semibold bg-gray-200 text-green-600 rounded-full pl-2.5 pr-2 py-0.5">{freeProjectsRemaining}🪙</span>
+            You have: <span className="font-semibold bg-gray-200 text-green-600 rounded-full pl-2.5 pr-2 py-0.5 text-sm">{freeProjectsRemaining}🪙</span>
           </div>
           <button
             onClick={() => setIsOpen(!isOpen)}
             disabled={isCreating}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#8c52ff] to-[#a855f7] text-white px-3 py-2 rounded-lg hover:from-[#8c52ff]/90 hover:to-[#a855f7]/90 transition-all duration-200 font-medium shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-gradient-to-r from-[#8c52ff] to-[#a855f7] text-sm text-white px-3 py-2 rounded-lg hover:from-[#8c52ff]/90 hover:to-[#a855f7]/90 transition-all duration-200 font-medium shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <BsStars className="w-5 h-5" />
             <span className="font-semibold">
@@ -103,9 +103,9 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
       ) : (
         <button
           onClick={() => setIsRechargeModalOpen(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg cursor-pointer"
+          className="flex items-center gap-2 bg-green-600 text-sm text-white px-2 py-1.5 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg cursor-pointer"
         >
-          <BsStars className="w-5 h-5" />
+          <BsStars className="w-4 h-4" />
           <span className="font-semibold">Recharge credits</span>
         </button>
       )}
@@ -117,7 +117,7 @@ const CreateNewButton: React.FC<CreateNewButtonProps> = ({
               key={option.id}
               onClick={option.onClick}
               disabled={option.disabled || projectType === 'car' || isCreating}
-              className={`w-full pr-2 pl-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center justify-between ${
+              className={`w-full pr-2 pl-4 py-2 cursor-pointer text-sm text-left hover:bg-gray-50 flex items-center justify-between ${
                 option.disabled || projectType === 'car' || isCreating ? 'opacity-60 cursor-not-allowed' : ''
               }`}
             >

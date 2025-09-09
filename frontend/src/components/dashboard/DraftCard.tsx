@@ -30,7 +30,7 @@ const DraftCard = memo<DraftCardProps>(({
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-gray-900 truncate">{project.name}</h3>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 whitespace-nowrap">{project.lastUpdated}</span>
+              <span className="text-xs text-gray-400 whitespace-nowrap">{project.lastUpdated}</span>
               <div className="relative">
                 <button
                   onClick={onOptionsClick}
@@ -50,7 +50,7 @@ const DraftCard = memo<DraftCardProps>(({
           </div>
           
           <div className="mb-3">
-            <div className="flex justify-between text text-gray-600 mb-2">
+            <div className="flex justify-between text-xs text-gray-600 mb-2">
               <span>Progress</span>
               <span>{project.progress}%</span>
             </div>
