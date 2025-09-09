@@ -13,8 +13,7 @@ load_dotenv()
 SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/admin.directory.user.readonly'
+    'https://www.googleapis.com/auth/userinfo.email'
 ]
 
 def _get_config():
