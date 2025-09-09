@@ -8,6 +8,7 @@ import { MESSAGES } from './config/constants';
 import { useChat } from './context/ChatContext';
 import { useAuth } from './context/AuthContext';
 import { useApi, useBuilderState } from './hooks';
+import type { QuestionOption } from './types/builder';
 import { projectService } from './services/project';
 import toast from 'react-hot-toast';
 
@@ -25,11 +26,14 @@ const Builder: React.FC = () => {
     currentStep,
     totalSteps,
     customInput,
+    isMultiselect,
+    selectedOptions,
     resetQuestionState,
     resetAllState,
     setQuestionState,
     setIsComplete,
     setCustomInput,
+    setSelectedOptions,
   } = useBuilderState();
 
   const [showStartOverModal, setShowStartOverModal] = useState(false);
@@ -168,9 +172,27 @@ const Builder: React.FC = () => {
     }
   }, [messages.length, chatComplete, updateMessages, setIsComplete, resetQuestionState, setQuestionState, projectId]);
 
-  const handleOptionSelect = useCallback((optionText: string) => {
-    sendMessage(optionText);
-  }, [sendMessage]);
+  const handleOptionSelect = useCallback((option: QuestionOption) => {
+    if (!isMultiselect) {
+      sendMessage(option.value);
+      return;
+    }
+
+    // For multiselect, update the selected options
+    const isAlreadySelected = selectedOptions.some(selected => selected.value === option.value);
+    if (isAlreadySelected) {
+      setSelectedOptions(selectedOptions.filter(selected => selected.value !== option.value));
+    } else {
+      setSelectedOptions([...selectedOptions, option]);
+    }
+  }, [isMultiselect, selectedOptions, setSelectedOptions, sendMessage]);
+
+  const handleContinue = useCallback(() => {
+    if (isMultiselect && selectedOptions.length > 0) {
+      const values = selectedOptions.map(option => option.value);
+      sendMessage(values.join(','));
+    }
+  }, [isMultiselect, selectedOptions, sendMessage]);
 
   const handleTitleUpdate = useCallback(async (newTitle: string) => {
     if (projectId) {
@@ -304,6 +326,9 @@ const Builder: React.FC = () => {
                 onDownload={downloadImage}
                 projectTitle={projectTitle}
                 onTitleUpdate={handleTitleUpdate}
+                isMultiselect={isMultiselect}
+                selectedOptions={selectedOptions}
+                onContinue={handleContinue}
               />
             </section>
           </div>

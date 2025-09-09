@@ -25,7 +25,7 @@ const FeedbackButton: React.FC = () => {
           className="bg-[#8c52ff] text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-[#7440e0] transition-colors duration-200 flex items-center gap-2"
         >
           <FaHandHoldingHeart className="w-5 h-5" />
-          <span>Give us feedback</span>
+          <span>Send us feedback</span>
         </button>
         <button
           onClick={() => setIsVisible(false)}

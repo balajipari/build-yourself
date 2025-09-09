@@ -55,7 +55,7 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
       {/* Project Image with Heart Icon */}
       <div className="relative aspect-[4/3] md:aspect-[16/9] lg:aspect-square bg-gray-100">
         <OptimizedImage 
-          src={!project.image || imageError ? DEFAULT_IMAGES.BIKE_GRAFFITI : project.image} 
+          src={!project.image || imageError ? './src/assets/default-bike.png' : project.image} 
           alt={`Custom motorcycle design: ${project.name}`}
           className="w-full h-full object-cover"
           loading="lazy"

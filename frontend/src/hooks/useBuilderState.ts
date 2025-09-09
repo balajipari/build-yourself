@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { APP_CONFIG } from '../config/constants';
-import type { BuilderState, QuestionData } from '../types/builder';
+import type { BuilderState, QuestionData, QuestionOption } from '../types/builder';
 
 // Custom hook for builder state management
 export function useBuilderState() {
@@ -10,9 +10,11 @@ export function useBuilderState() {
     imageBase64: null,
     questionText: '',
     options: [],
+    selectedOptions: [],
     currentStep: 0,
     totalSteps: APP_CONFIG.DEFAULT_TOTAL_STEPS,
     customInput: '',
+    isMultiselect: false,
   });
 
   const resetQuestionState = useCallback(() => {
@@ -33,9 +35,11 @@ export function useBuilderState() {
       imageBase64: null,
       questionText: '',
       options: [],
+      selectedOptions: [],
       currentStep: 0,
       totalSteps: APP_CONFIG.DEFAULT_TOTAL_STEPS,
       customInput: '',
+      isMultiselect: false,
     });
   }, []);
 
@@ -48,6 +52,7 @@ export function useBuilderState() {
       totalSteps: data.total_steps || APP_CONFIG.DEFAULT_TOTAL_STEPS,
       isComplete: false,
       customInput: '',
+      isMultiselect: data.is_multiselect || false,
     }));
   }, []);
 
@@ -67,6 +72,10 @@ export function useBuilderState() {
     setState(prev => ({ ...prev, customInput }));
   }, []);
 
+  const setSelectedOptions = useCallback((selectedOptions: QuestionOption[]) => {
+    setState(prev => ({ ...prev, selectedOptions }));
+  }, []);
+
   return {
     ...state,
     resetQuestionState,
@@ -76,5 +85,6 @@ export function useBuilderState() {
     setIsComplete,
     setImageBase64,
     setCustomInput,
+    setSelectedOptions,
   };
 }

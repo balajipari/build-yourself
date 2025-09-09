@@ -8,6 +8,9 @@ import AllProjects from './AllProjects';
 import Pagination from '../common/Pagination';
 import { mapToDashboardProject, mapToInProgressProject } from '../../utils/projectMappers';
 import toast from 'react-hot-toast';
+import { usePolling } from '../../hooks/usePolling';
+import { useDocumentVisibility } from '../../hooks/useDocumentVisibility';
+import { TIMING_CONFIG } from '../../config/constants';
 import { useProject } from '../../context/ProjectContext';
 
 const DashboardContent: React.FC = () => {
@@ -22,10 +25,19 @@ const DashboardContent: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [sortBy, showFavorites, searchTerm, projectType, currentPage, pageSize]);
+  // Track document visibility
+  const isVisible = useDocumentVisibility();
 
+  // Handle polling for project updates
+  const handlePollingError = useCallback((error: Error) => {
+    console.error('Polling error:', error);
+    // Only show error toast if it's not a network error (to avoid spamming users)
+    if (!(error instanceof TypeError)) {
+      toast.error('Failed to refresh projects');
+    }
+  }, []);
+
+  // Define fetchProjects before using it in the polling hook
   const fetchProjects = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -61,6 +73,18 @@ const DashboardContent: React.FC = () => {
       setIsLoading(false);
     }
   }, [sortBy, searchTerm, showFavorites, projectType, currentPage, pageSize]);
+
+  // Setup polling
+  usePolling(fetchProjects, {
+    interval: TIMING_CONFIG.POLLING.DASHBOARD,
+    enabled: isVisible, // Only poll when the tab is visible
+    onError: handlePollingError,
+  });
+
+  // Initial fetch and when filters change
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
 
   const handleFavoriteToggle = useCallback(async (projectId: string) => {
