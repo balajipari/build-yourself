@@ -23,16 +23,16 @@ const ChipsSelect: React.FC<ChipsSelectProps> = ({
 
   return (
     <div className={`${className}`}>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
         {options.map((option) => (
           <button
             key={option.number}
             onClick={() => onOptionSelect(option)}
             className={`
-              p-3 text-left rounded-xl transition-all duration-200 cursor-pointer
+              p-3 text-left text-xs text-gray-500 rounded-xl shadow bg-white transition-all duration-200 cursor-pointer 
               ${isSelected(option) 
-                ? 'bg-[#8c52ff] text-white border-[#8c52ff]' 
-                : 'bg-blue-50 border border-blue-100 hover:border-[#8c52ff]'}
+                ? '!text-[#8c52ff] border !border-[#8c52ff]'
+                : 'border border-gray-300 hover:border-gray-300 hover:scale-101'}
             `}
           >
             <span className="font-medium">{option.text}</span>
@@ -43,7 +43,7 @@ const ChipsSelect: React.FC<ChipsSelectProps> = ({
       {isMultiselect && selectedOptions.length > 0 && (
         <button
           onClick={onContinue}
-          className="mt-6 w-full bg-[#8c52ff] text-white py-3 px-6 rounded-xl hover:bg-[#7440d8] transition-all duration-200"
+          className="mt-6 text-sm w-fit font-semibold border border-[#8c52ff] bg-[#8c52ff] shadow text-white py-2.5 px-4 rounded-full transition-all duration-200"
         >
           Continue with {selectedOptions.length} selection{selectedOptions.length !== 1 ? 's' : ''}
         </button>

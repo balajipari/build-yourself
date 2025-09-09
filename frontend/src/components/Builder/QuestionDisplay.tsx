@@ -29,7 +29,7 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
 
   return (
     <div className={`${className}`}>
-      <h3 className="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-3">
+      <h3 className="text font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-3">
         {questionText}
       </h3>
       

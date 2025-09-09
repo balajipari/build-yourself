@@ -308,8 +308,8 @@ const QuestionSection: React.FC<QuestionSectionProps> = ({
 
   return (
     <div className="flex justify-center p-4 pb-6 rounded-b-lg relative">
-      <LoadingOverlay loading={loading || false} />
       <div className="inline-block max-w-[80%] px-4 py-3 rounded-xl bg-blue-50 text-black border border-gray-200">
+      <LoadingOverlay loading={loading || false} />
         {options && options.length > 0 ? (
           <QuestionDisplay
             questionText={questionText}

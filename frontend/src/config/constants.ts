@@ -36,10 +36,6 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
-export const DEFAULT_IMAGES = {
-  BIKE_GRAFFITI: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTJlOGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzQ3NTU2OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk15IERyZWFtIEJpa2U8L3RleHQ+PC9zdmc+',
-} as const;
-
 export const FRONTEND_URLS = {
   BASE_URL: import.meta.env.VITE_BACKEND_URL,
   DASHBOARD: `${import.meta.env.VITE_FRONTEND_URL}/dashboard`,
@@ -63,5 +59,20 @@ export const MESSAGES = {
   SUCCESS: {
     BIKE_READY: 'Your Custom Bike is Ready!',
     BIKE_DESCRIPTION: "Here's your dream motorcycle, designed just for you",
+  },
+} as const;
+
+export const TIMING_CONFIG = {
+  POLLING: {
+    DASHBOARD: 10000, // 10 seconds for dashboard project updates
+    FAST: 5000,      // 5 seconds for time-sensitive updates
+    SLOW: 30000,     // 30 seconds for less critical updates
+  },
+  DEBOUNCE: {
+    DEFAULT: 300,    // Default debounce time for inputs
+    SEARCH: 500,     // Debounce time for search inputs
+  },
+  THROTTLE: {
+    DEFAULT: 1000,   // Default throttle time
   },
 } as const;
