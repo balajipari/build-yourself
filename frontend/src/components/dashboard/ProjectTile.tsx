@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaHeart, FaRegHeart, FaEllipsisH } from 'react-icons/fa';
+import React, { useEffect, useRef, useState } from 'react';
+import { FaEllipsisH, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { RiDownloadLine } from "react-icons/ri";
 import { TbTrash } from "react-icons/tb";
-import type { Project } from './types';
-import { DEFAULT_IMAGES } from '../../config/constants';
 import OptimizedImage from '../common/OptimizedImage';
-import { formatDate } from '../../utils/dateFormat';
+import type { Project } from './types';
+import defaultBike from '../../assets/default-bike.png';
 
 interface ProjectTileProps {
   project: Project;
@@ -55,7 +54,7 @@ const ProjectTile: React.FC<ProjectTileProps> = ({
       {/* Project Image with Heart Icon */}
       <div className="relative aspect-[4/3] md:aspect-[16/9] lg:aspect-square bg-gray-100">
         <OptimizedImage 
-          src={!project.image || imageError ? './src/assets/default-bike.png' : project.image} 
+          src={!project.image || imageError ? defaultBike : project.image} 
           alt={`Custom motorcycle design: ${project.name}`}
           className="w-full h-full object-cover"
           loading="lazy"

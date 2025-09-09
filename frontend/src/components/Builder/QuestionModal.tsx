@@ -61,7 +61,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-xl">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-4 border-[#8c52ff] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm font-medium text-gray-600">Processing...</p>
+                <p className="text-sm font-medium text-gray-600">Thinking...</p>
               </div>
             </div>
           )}

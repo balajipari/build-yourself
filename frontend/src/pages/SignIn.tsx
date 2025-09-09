@@ -1,6 +1,7 @@
 import React from 'react';
 import ImageCarousel from '../components/auth/ImageCarousel';
 import SignInForm from '../components/auth/SignInForm';
+import logo from '../assets/logo.png';
 
 const SignIn: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ const SignIn: React.FC = () => {
         {/* Brand Logo and Name */}
         <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
           <img 
-            src="./assets/logo.png" 
+            src={logo} 
             alt="Build it Yourself Logo" 
             className="w-12 h-12 object-contain"
           />
@@ -25,7 +26,7 @@ const SignIn: React.FC = () => {
       </div>
 
       {/* Sign In Form */}
-      <div className="flex justify-center items-center py-8 bg-white">
+      <div className="flex justify-center items-center py-8">
         <SignInForm />
       </div>
     </div>

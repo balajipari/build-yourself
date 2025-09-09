@@ -54,7 +54,7 @@ const ImageCarousel: React.FC = () => {
   };
 
   return (
-    <section className="bg-white py-16" role="region" aria-label="Welcome Carousel">
+    <section className=" py-16" role="region" aria-label="Welcome Carousel">
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col items-center gap-12">
