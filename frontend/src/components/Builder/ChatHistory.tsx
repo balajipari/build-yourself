@@ -43,7 +43,7 @@ interface ChatHistoryProps {
   isComplete?: boolean;
   customInput?: string;
   loading?: boolean;
-  onOptionSelect?: (optionText: string) => void;
+  onOptionSelect?: (option: QuestionOption) => void;
   onCustomInputChange?: (value: string) => void;
   onCustomSubmit?: () => void;
   isValidating?: boolean;
@@ -51,6 +51,9 @@ interface ChatHistoryProps {
   onDownload?: () => void;
   projectTitle?: string;
   onTitleUpdate?: (newTitle: string) => Promise<void>;
+  isMultiselect?: boolean;
+  selectedOptions?: QuestionOption[];
+  onContinue?: () => void;
 }
 
 interface ValidationResult {
@@ -117,43 +120,7 @@ const ImageResult: React.FC<ImageResultProps> = ({ imageBase64, onDownload }) =>
   );
 };
 
-interface QuestionOptionsProps {
-  options: QuestionOption[];
-  onOptionSelect: (optionText: string) => void;
-  loading: boolean;
-}
-
-const OptionButton: React.FC<{
-  option: QuestionOption;
-  onSelect: () => void;
-  disabled: boolean;
-}> = ({ option, onSelect, disabled }) => (
-  <button
-    key={option.number}
-    onClick={onSelect}
-    disabled={disabled}
-    className="px-4 py-1.5 bg-white shadow border border-gray-200 rounded-full hover:bg-gray-50 hover:border-[#8c52ff] transition-all duration-200 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-  >
-    <span className="text-gray-700">{option.text}</span>
-  </button>
-);
-
-const QuestionOptions: React.FC<QuestionOptionsProps> = ({ options, onOptionSelect, loading }) => {
-  const handleSelect = useCallback((text: string) => () => onOptionSelect(text), [onOptionSelect]);
-
-  return (
-    <div className="flex flex-wrap gap-2 mb-3">
-      {options.map((opt) => (
-        <OptionButton
-          key={opt.number}
-          option={opt}
-          onSelect={handleSelect(opt.text)}
-          disabled={loading}
-        />
-      ))}
-    </div>
-  );
-};
+import QuestionDisplay from './QuestionDisplay';
 
 interface CustomInputProps {
   customInput: string;
@@ -265,6 +232,23 @@ interface ChatContentProps {
   onDownload?: () => void;
 }
 
+interface LoadingOverlayProps {
+  loading: boolean;
+}
+
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading }) => {
+  if (!loading) return null;
+
+  return (
+    <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-4 border-[#8c52ff] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-medium text-gray-600">Processing...</p>
+      </div>
+    </div>
+  );
+};
+
 const ChatContent: React.FC<ChatContentProps> = ({ messages, isComplete, imageBase64, onDownload }) => {
   if (messages.length === 0) {
     return (
@@ -293,12 +277,15 @@ interface QuestionSectionProps {
   isComplete?: boolean;
   customInput?: string;
   loading?: boolean;
-  onOptionSelect?: (optionText: string) => void;
+  onOptionSelect?: (option: QuestionOption) => void;
   onCustomInputChange?: (value: string) => void;
   validationResult: ValidationResult | null;
   validationError: string | null;
   isLocalValidating: boolean;
   onSubmit: () => void;
+  isMultiselect?: boolean;
+  selectedOptions?: QuestionOption[];
+  onContinue?: () => void;
 }
 
 const QuestionSection: React.FC<QuestionSectionProps> = ({
@@ -312,24 +299,29 @@ const QuestionSection: React.FC<QuestionSectionProps> = ({
   validationResult,
   validationError,
   isLocalValidating,
-  onSubmit
+  onSubmit,
+  isMultiselect = false,
+  selectedOptions = [],
+  onContinue = () => {}
 }) => {
   if (!questionText || isComplete) return null;
 
   return (
-    <div className="flex justify-center p-4 pb-6 rounded-b-lg">
+    <div className="flex justify-center p-4 pb-6 rounded-b-lg relative">
+      <LoadingOverlay loading={loading || false} />
       <div className="inline-block max-w-[80%] px-4 py-3 rounded-xl bg-blue-50 text-black border border-gray-200">
-        <div className="text-sm font-medium text-gray-700 mb-3">{questionText}</div>
-        
-        {options && options.length > 0 && (
-          <QuestionOptions 
-            options={options} 
-            onOptionSelect={onOptionSelect || (() => {})} 
-            loading={loading || false} 
+        {options && options.length > 0 ? (
+          <QuestionDisplay
+            questionText={questionText}
+            options={options}
+            selectedOptions={selectedOptions}
+            isMultiselect={isMultiselect}
+            isComplete={isComplete || false}
+            onOptionSelect={onOptionSelect || (() => {})}
+            onContinue={onContinue}
+            loading={loading || false}
           />
-        )}
-        
-        {(!options || options.length === 0) && (
+        ) : (
           <CustomInput
             customInput={customInput || ''}
             loading={loading || false}
@@ -360,6 +352,9 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   onDownload,
   projectTitle,
   onTitleUpdate,
+  isMultiselect,
+  selectedOptions,
+  onContinue,
 }) => {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isLocalValidating, setIsLocalValidating] = useState(false);
@@ -438,6 +433,9 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
               validationError={validationError}
               isLocalValidating={isLocalValidating}
               onSubmit={handleCustomSubmit}
+              isMultiselect={isMultiselect}
+              selectedOptions={selectedOptions}
+              onContinue={onContinue}
             />
           </div>
 
@@ -456,19 +454,35 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
           {/* Mobile Question Modal */}
           <QuestionModal
             isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
+            onClose={() => !loading && setIsModalOpen(false)}
             questionText={questionText || ''}
             options={options || []}
             customInput={customInput || ''}
             onOptionSelect={(option) => {
-              onOptionSelect?.(option);
-              setIsModalOpen(false);
+              const selectedOption = options?.find(opt => opt.text === option);
+              if (selectedOption && !loading) {
+                onOptionSelect?.(selectedOption);
+                if (!isMultiselect) {
+                  setIsModalOpen(false);
+                }
+              }
             }}
             onCustomInputChange={onCustomInputChange || (() => {})}
             onCustomSubmit={() => {
-              handleCustomSubmit();
-              setIsModalOpen(false);
+              if (!loading) {
+                handleCustomSubmit();
+                setIsModalOpen(false);
+              }
             }}
+            isMultiselect={isMultiselect}
+            selectedOptions={selectedOptions}
+            onContinue={() => {
+              if (!loading) {
+                onContinue?.();
+                setIsModalOpen(false);
+              }
+            }}
+            loading={loading}
           />
         </div>
       </div>

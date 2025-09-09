@@ -310,7 +310,7 @@ When user selects "Custom" option:
 
 🔧 BEHAVIOR RULES:
 1. First Question (Step 0):
-   - Multi-select enabled through ui_config
+   - set is_multiselect to true
    - Supports 1-3 bike type selections
    - Custom input with 500 char limit
    - Continue button initially disabled

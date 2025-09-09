@@ -40,6 +40,7 @@ class QuestionResponse(BaseModel):
     current_step: int
     total_steps: int = 15
     is_complete: bool = False
+    is_multiselect: bool = False
     user_feedback: Optional[str] = None
     parent_question: Optional[str] = None
     follow_up_count: int = 0
@@ -183,6 +184,7 @@ class ChatResponse(BaseModel):
     options: Optional[List[dict]] = None
     current_step: Optional[int] = None
     total_steps: Optional[int] = None
+    is_multiselect: Optional[bool] = None
     raw_response: Optional[dict] = None
     
     @classmethod
@@ -194,7 +196,8 @@ class ChatResponse(BaseModel):
             question_text=question_content.question_text,
             options=question_content.get_options_dict(),
             current_step=question_content.current_step,
-            total_steps=question_content.total_steps
+            total_steps=question_content.total_steps,
+            is_multiselect=question_content.is_multiselect
         )
     
     @classmethod
