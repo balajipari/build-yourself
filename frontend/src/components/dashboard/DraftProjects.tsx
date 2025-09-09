@@ -5,6 +5,7 @@ import '../../styles/scrollbar.css';
 import toast from 'react-hot-toast';
 import { projectService } from '../../services/project';
 import DraftCard from './DraftCard';
+import { useAuth } from '../../context/AuthContext';
 
 interface DraftProjectsProps {
   projects: InProgressProject[];
@@ -12,11 +13,19 @@ interface DraftProjectsProps {
 
 const DraftProjects = memo<DraftProjectsProps>(({ projects }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [openOptionsId, setOpenOptionsId] = useState<string | null>(null);
 
   const handleProjectClick = useCallback((projectId: string) => {
+    const hasCredits = user?.project_quota?.free_projects_remaining ?? 0 > 0;
+    
+    if (!hasCredits) {
+      // Don't navigate, the existing recharge UI will be shown
+      return;
+    }
+    
     navigate(`/builder?projectId=${projectId}`);
-  }, [navigate]);
+  }, [navigate, user?.project_quota?.free_projects_remaining]);
 
   const handleOptionsClick = useCallback((e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
